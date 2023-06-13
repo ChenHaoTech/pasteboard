@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/pasteboard_item.dart';
 
-class ContentItemView extends StatelessWidget {
-  const ContentItemView({
+class PasteboardItemView extends StatelessWidget {
+  const PasteboardItemView({
     Key? key,
     required this.item,
     this.onTap,

@@ -2,13 +2,14 @@ import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/pasteboard_item.dart';
+import 'package:flutter_pasteboard/sha256_util.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'content_item.dart';
+import 'pasteboard_item_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -146,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage>
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: pasteboardItems.length,
                 itemBuilder: (context, index) {
-                  return ContentItemView(
+                  return PasteboardItemView(
                     item: pasteboardItems[index],
                     onTap: () async {
                       PasteboardItem item = pasteboardItems[index];
@@ -171,9 +172,47 @@ class _MyHomePageState extends State<MyHomePage>
                   );
                 }),
           ),
+          _getDivider(),
+          SliverToBoxAdapter(
+            child: PasteboardItemView(
+              item: PasteboardItem(0, text: "Settings"),
+              onTap: () {},
+            ),
+          ),
+          _getDivider(),
+          SliverToBoxAdapter(
+            child: PasteboardItemView(
+              item: PasteboardItem(0, text: "Quit App"),
+              onTap: () {
+                windowManager.close();
+              },
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 6),
+          )
         ],
       ),
     );
+  }
+
+  SliverToBoxAdapter _getDivider() {
+    return SliverToBoxAdapter(
+        child: Column(
+      children: [
+        const SizedBox(
+          height: 6,
+        ),
+        Container(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.expand(height: 1.0),
+          child: const Divider(),
+        ),
+        const SizedBox(
+          height: 6,
+        ),
+      ],
+    ));
   }
 
   Color getColor(int index) {
@@ -186,20 +225,32 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void onClipboardChanged() async {
+    PasteboardItem? targetItem;
     ClipboardData? newClipboardData =
         await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
-      //从末尾添加
-      pasteboardItems.insert(
-          0, PasteboardItem(0, text: newClipboardData.text!.trim()));
-      return;
+      String text = newClipboardData.text!.trim();
+      String sha256 = SHA256Util.calculateSHA256ForText(text);
+      targetItem = PasteboardItem(0, text: text, sha256: sha256);
     }
     final image = await Pasteboard.image;
     if (image != null) {
-      pasteboardItems.insert(0, PasteboardItem(1, image: image));
+      String sha256 = SHA256Util.calculateSHA256(image);
+      targetItem = PasteboardItem(1, image: image, sha256: sha256);
+    }
+    if (targetItem == null) {
       return;
     }
+    for (int i = 0; i < pasteboardItems.length; i++) {
+      PasteboardItem item = pasteboardItems[i];
+      if (item.sha256 == targetItem!.sha256) {
+        targetItem = item;
+        pasteboardItems.removeAt(i);
+        break;
+      }
+    }
+    pasteboardItems.insert(0, targetItem!);
   }
 
   @override
