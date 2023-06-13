@@ -41,6 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   screen_retriever: ^0.1.6
   keypress_simulator: ^0.1.0
+  pasteboard: ^0.2.0
 
 dev_dependencies:
   flutter_test:

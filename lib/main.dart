@@ -1,8 +1,10 @@
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/pasteboard_item.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -15,7 +17,7 @@ void main() async {
   await hotKeyManager.unregisterAll();
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(220, 350),
+    size: Size(210, 350),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: true,
@@ -58,7 +60,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with ClipboardListener, WindowListener {
-  List<String> items = [];
+  List<PasteboardItem> pasteboardItems = [];
   ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
   late ScrollController _scrollController;
 
@@ -85,10 +87,24 @@ class _MyHomePageState extends State<MyHomePage>
       keyDownHandler: (hotKey) async {
         windowManager.showWithoutActive();
         Offset position = await screenRetriever.getCursorScreenPoint();
+        // await screenRetriever.getPrimaryDisplay().then((value) {
+        //   if (position.dy > 0 && position.dy + 350 > value.size.height) {
+        //     position = Offset(position.dx, value.size.height - 350);
+        //   } else if (position.dy < 0 && position.dy + 350 > 0) {
+        //     position = Offset(position.dx, -350);
+        //   }
+
+        //   if (position.dx > 0 && position.dx + 210 > value.size.width) {
+        //     position = Offset(value.size.width - 210, position.dy);
+        //   } else if (position.dx < 0 && position.dx + 210 > 0) {
+        //     position = Offset(-210, position.dy);
+        //   }
+        // });
         windowManager.setPosition(position, animate: true);
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        setState(() {});
       },
       // Only works on macOS.
       keyUpHandler: (hotKey) {},
@@ -128,12 +144,17 @@ class _MyHomePageState extends State<MyHomePage>
             child: ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
+                itemCount: pasteboardItems.length,
                 itemBuilder: (context, index) {
-                  return ContentItem(
-                    text: '$index. ${items[index]}',
+                  return ContentItemView(
+                    item: pasteboardItems[index],
                     onTap: () async {
-                      Clipboard.setData(ClipboardData(text: items[index]));
+                      PasteboardItem item = pasteboardItems[index];
+                      if (item.type == 0) {
+                        Clipboard.setData(ClipboardData(text: item.text!));
+                      } else if (item.type == 1) {
+                        Pasteboard.writeImage(item.image!);
+                      }
                       windowManager.hide();
                       Future.delayed(const Duration(milliseconds: 40),
                           () async {
@@ -169,10 +190,15 @@ class _MyHomePageState extends State<MyHomePage>
         await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
-      setState(() {
-        //从末尾添加
-        items.insert(0, newClipboardData.text!.trim());
-      });
+      //从末尾添加
+      pasteboardItems.insert(
+          0, PasteboardItem(0, text: newClipboardData.text!.trim()));
+      return;
+    }
+    final image = await Pasteboard.image;
+    if (image != null) {
+      pasteboardItems.insert(0, PasteboardItem(1, image: image));
+      return;
     }
   }
 

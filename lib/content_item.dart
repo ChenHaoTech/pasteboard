@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pasteboard/pasteboard_item.dart';
 
-class ContentItem extends StatelessWidget {
-  const ContentItem({
+class ContentItemView extends StatelessWidget {
+  const ContentItemView({
     Key? key,
-    required this.text,
+    required this.item,
     this.onTap,
     this.onLongPress,
   }) : super(key: key);
 
-  final String text;
+  final PasteboardItem item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
@@ -27,15 +28,28 @@ class ContentItem extends StatelessWidget {
           child: Ink(
               padding:
                   const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
-              child: Text(
-                text,
-                maxLines: 1,
-                style: Theme.of(context).textTheme.bodyMedium,
-                overflow: TextOverflow.ellipsis,
-              )),
+              child: _getWidget(item)),
         ),
       ),
     );
+  }
+
+  Widget _getWidget(PasteboardItem item) {
+    if (item.type == 0 && item.text != null) {
+      return Text(
+        item.text!,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
+      return Image.memory(
+        item.image!,
+        width: double.infinity,
+        height: 40,
+        fit: BoxFit.cover,
+      );
+    }
+    return Container();
   }
 
   Color getColor(int index) {
