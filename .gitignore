@@ -1,0 +1,121 @@
+# Flutter/Dart specific
+**/build/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+/test_coverage/
+/build/
+
+# Xcode specific
+**/.DS_Store
+**/*.pbxuser
+**/*.mode1v3
+**/*.mode2v3
+**/*.perspectivev3
+**/*.xcworkspace
+**/*.xcworkspacedata
+**/*.pbxproj
+**/*.xccheckout
+*.xcworkspace
+*.xccheckout
+*.xcuserstate
+
+# Android specific
+**/android/gradle.properties
+**/android/local.properties
+**/android/gradle-wrapper.jar
+**/android/gradle-wrapper.properties
+**/android/LocalSettings.gradle
+**/android/captures/
+
+# IntelliJ / Android Studio specific
+**/*.iml
+**/.idea/
+**/.idea/workspace.xml
+**/.idea/modules.xml
+**/.idea/libraries/
+**/.idea/caches/
+**/.idea/misc.xml
+**/.idea/navEditor.xml
+
+# Visual Studio Code specific
+**/.vscode/
+**/.history/
+
+# Flutter generated files
+
+# Dart pubspec files
+**/.dart_tool/
+**/.pub/
+**/.pub-cache/
+**/pubspec.lock
+
+# Flutter build files
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/App.framework.dSYM/
+**/ios/Flutter/Flutter.framework.dSYM/
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/flutter_xcconfig.json
+**/android/flutter/ephemeral/.ios
+**/android/flutter/ephemeral/.ios/.extract_iOS_frameworks.sh
+**/android/flutter/ephemeral/.ios/Flutter/Debug.xcconfig
+**/android/flutter/ephemeral/.ios/Flutter/Release.xcconfig
+**/android/flutter/ephemeral/.ios/Flutter/flutter_export_environment.sh
+**/android/gradlew
+**/android/gradle/
+**/android/gradlew.bat
+**/android/.gradle/
+**/android/Flutter/build/
+**/android/Flutter/flutter_assets/
+**/android/Flutter/Generated.xcconfig
+**/android/Flutter/App.framework/
+**/android/Flutter/Flutter.framework/
+**/android/Flutter/Flutter.podspec
+**/android/Flutter/flutter_export_environment.sh
+**/android/Flutter/flutter_xcconfig.json
+**/android/Flutter/ephemeral/
+**/android/Flutter/timestamp
+
+# Flutter IntelliJ plugin-specific files
+.idea/
+*.iws
+*.ipr
+
+# Android Studio generated files
+**/.gradle/
+.gradle/
+**/.project
+**/gradle/
+**/gradlew
+**/gradlew.bat
+
+# VS Code generated files
+.vscode/
+.history/
+
+# Other generated files
+/.metadata
+/pubspec.lock
+
+# Web-related
+**/webdev/
+
+# Ignore any file with the specified extensions
+*.swp
+*.bak
+*.lock
+*.log
+*.ini
+*.DS_Store
+*.iml
+*.apk
+*.ap_
+
+# Ignore Visual Studio Code folder
