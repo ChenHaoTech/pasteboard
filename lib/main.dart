@@ -194,6 +194,8 @@ class _MyHomePageState extends State<MyHomePage>
             child: PasteboardItemView(
               item: PasteboardItem(0, text: "Quit App"),
               onTap: () {
+                //quit app
+                windowManager.destroy();
                 windowManager.close();
               },
             ),
