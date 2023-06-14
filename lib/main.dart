@@ -185,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage>
           _getDivider(),
           SliverToBoxAdapter(
             child: PasteboardItemView(
+              type: 'button',
               item: PasteboardItem(0, text: "Settings"),
               onTap: () {},
             ),
@@ -192,6 +193,7 @@ class _MyHomePageState extends State<MyHomePage>
           _getDivider(),
           SliverToBoxAdapter(
             child: PasteboardItemView(
+              type: 'button',
               item: PasteboardItem(0, text: "Quit App"),
               onTap: () {
                 //quit app

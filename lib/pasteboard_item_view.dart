@@ -8,8 +8,11 @@ class PasteboardItemView extends StatelessWidget {
     this.index,
     this.onTap,
     this.onLongPress,
+    this.type = "item",
   }) : super(key: key);
 
+// default: item, button
+  final String type;
   final int? index;
   final PasteboardItem item;
   final VoidCallback? onTap;
@@ -30,23 +33,33 @@ class PasteboardItemView extends StatelessWidget {
           child: Ink(
               padding:
                   const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
-              child: _getWidget(item)),
+              child: _getWidget(item, context)),
         ),
       ),
     );
   }
 
-  Widget _getWidget(PasteboardItem item) {
+  Widget _getWidget(PasteboardItem item, BuildContext context) {
     if (item.type == 0 && item.text != null) {
       return Text(
         index != null ? "$index. ${item.text}" : item.text!,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: type == 'button'
+            ? TextStyle(color: Theme.of(context).colorScheme.primary)
+            : null,
       );
     } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
       return Row(
         children: [
-          index != null ? Text("$index. ") : SizedBox.shrink(),
+          index != null
+              ? Text(
+                  "$index. ",
+                  style: type == 'button'
+                      ? TextStyle(color: Theme.of(context).colorScheme.primary)
+                      : null,
+                )
+              : SizedBox.shrink(),
           Expanded(
               child: Image.memory(
             item.image!,
