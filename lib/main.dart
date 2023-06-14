@@ -148,6 +148,7 @@ class _MyHomePageState extends State<MyHomePage>
                 itemCount: pasteboardItems.length,
                 itemBuilder: (context, index) {
                   return PasteboardItemView(
+                    index: index,
                     item: pasteboardItems[index],
                     onTap: () async {
                       PasteboardItem item = pasteboardItems[index];

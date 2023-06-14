@@ -5,10 +5,12 @@ class PasteboardItemView extends StatelessWidget {
   const PasteboardItemView({
     Key? key,
     required this.item,
+    this.index,
     this.onTap,
     this.onLongPress,
   }) : super(key: key);
 
+  final int? index;
   final PasteboardItem item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -37,16 +39,22 @@ class PasteboardItemView extends StatelessWidget {
   Widget _getWidget(PasteboardItem item) {
     if (item.type == 0 && item.text != null) {
       return Text(
-        item.text!,
+        index != null ? "$index. ${item.text}" : item.text!,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
     } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
-      return Image.memory(
-        item.image!,
-        width: double.infinity,
-        height: 40,
-        fit: BoxFit.cover,
+      return Row(
+        children: [
+          index != null ? Text("$index. ") : SizedBox.shrink(),
+          Expanded(
+              child: Image.memory(
+            item.image!,
+            width: double.infinity,
+            height: 40,
+            fit: BoxFit.cover,
+          ))
+        ],
       );
     }
     return Container();
