@@ -36,9 +36,11 @@ class DatabaseHelper {
     await db.execute(createPasteboardItem);
   }
 
-  Future<int> insert(PasteboardItem item) async {
+  Future<PasteboardItem> insert(PasteboardItem item) async {
     Database db = await instance.database;
-    return await db.insert(table, item.toMap());
+    int id = await db.insert(table, item.toMap());
+    item.id = id;
+    return item;
   }
 
   Future<int> update(PasteboardItem item) async {
@@ -67,7 +69,7 @@ String createPasteboardItem = '''
     type INTEGER NOT NULL,
     text TEXT,
     image BLOB,
-    sha256 TEXT,
+    sha256 TEXT UNIQUE NOT NULL,
     create_time INTEGER NOT NULL
   )
 ''';

@@ -13,6 +13,7 @@ class PasteboardItem {
       {this.text, this.image, this.sha256, this.createTime});
 
   PasteboardItem.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
     type = map['type'];
     text = map['text'];
     image = map['image'];
@@ -22,6 +23,7 @@ class PasteboardItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'type': type,
       'text': text,
       'image': image,

@@ -263,12 +263,17 @@ class _MyHomePageState extends State<MyHomePage>
       }
     }
     targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
-    pasteboardItems.insert(0, targetItem);
     if (targetItem.id != null) {
       DatabaseHelper().update(targetItem);
     } else {
-      DatabaseHelper().insert(targetItem);
+      try {
+        targetItem = await DatabaseHelper().insert(targetItem);
+      } catch (e) {
+        print(e);
+        return;
+      }
     }
+    pasteboardItems.insert(0, targetItem);
   }
 
   @override
