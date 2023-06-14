@@ -43,6 +43,7 @@ dependencies:
   keypress_simulator: ^0.1.0
   pasteboard: ^0.2.0
   crypto: ^3.0.3
+  sqflite: ^2.2.8+4
 
 dev_dependencies:
   flutter_test:

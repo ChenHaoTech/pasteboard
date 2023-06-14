@@ -1,6 +1,7 @@
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/pasteboard_item.dart';
 import 'package:flutter_pasteboard/sha256_util.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -29,7 +30,9 @@ void main() async {
     // await windowManager.show();
     // await windowManager.focus();
   });
+  windowManager.hide();
   windowManager.setMovable(false);
+  windowManager.setResizable(false);
 
   runApp(MyApp());
 }
@@ -114,6 +117,12 @@ class _MyHomePageState extends State<MyHomePage>
       windowManager.hide();
     });
     windowManager.addListener(this);
+
+    DatabaseHelper().queryAll().then((value) {
+      setState(() {
+        pasteboardItems.addAll(value);
+      });
+    });
   }
 
   @override
@@ -251,7 +260,13 @@ class _MyHomePageState extends State<MyHomePage>
         break;
       }
     }
-    pasteboardItems.insert(0, targetItem!);
+    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
+    pasteboardItems.insert(0, targetItem);
+    if (targetItem.id != null) {
+      DatabaseHelper().update(targetItem);
+    } else {
+      DatabaseHelper().insert(targetItem);
+    }
   }
 
   @override
