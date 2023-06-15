@@ -4,6 +4,7 @@ import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
+import 'package:flutter_pasteboard/logger.dart';
 import 'package:flutter_pasteboard/pasteboard_item.dart';
 import 'package:flutter_pasteboard/sha256_util.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -108,13 +109,15 @@ class _MyHomePageState extends State<MyHomePage>
             position = Offset(-210, position.dy);
           }
         });
-        screenRetriever.getAllDisplays().then((value) {
-          for (var element in value) {
-            print('id: ${element.id}');
-            print('dx: ${element.visiblePosition!.dx}');
-            print('dy: ${element.visiblePosition!.dy}');
-          }
-        });
+        // screenRetriever.getAllDisplays().then((value) {
+        //   for (var element in value) {
+        //     print('id: ${element.id}');
+        //     print('dx: ${element.visiblePosition!.dx}');
+        //     print('dy: ${element.visiblePosition!.dy}');
+        //     print('width: ${element.size.width}');
+        //     print('height: ${element.size.height}');
+        //   }
+        // });
         windowManager.setPosition(position, animate: true);
         windowManager.focus();
         _scrollController.animateTo(0,
@@ -291,7 +294,7 @@ class _MyHomePageState extends State<MyHomePage>
       try {
         targetItem = await DatabaseHelper().insert(targetItem);
       } catch (e) {
-        print(e);
+        logger.e(e);
         return;
       }
     }
@@ -305,7 +308,7 @@ class _MyHomePageState extends State<MyHomePage>
     final file = File('$path/$fileName');
     await file.writeAsBytes(item.image!);
     item.path = file.path;
-    print(item.path);
+    logger.i("save image to local success");
     return item;
   }
 
