@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,9 +9,11 @@ import 'package:flutter_pasteboard/sha256_util.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'custom_tooltip.dart';
 import 'pasteboard_item_view.dart';
 
 void main() async {
@@ -26,7 +30,7 @@ void main() async {
     titleBarStyle: TitleBarStyle.hidden,
     windowButtonVisibility: false,
   );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
     // await windowManager.show();
     // await windowManager.focus();
   });
@@ -91,19 +95,26 @@ class _MyHomePageState extends State<MyHomePage>
       keyDownHandler: (hotKey) async {
         windowManager.showWithoutActive();
         Offset position = await screenRetriever.getCursorScreenPoint();
-        // await screenRetriever.getPrimaryDisplay().then((value) {
-        //   if (position.dy > 0 && position.dy + 350 > value.size.height) {
-        //     position = Offset(position.dx, value.size.height - 350);
-        //   } else if (position.dy < 0 && position.dy + 350 > 0) {
-        //     position = Offset(position.dx, -350);
-        //   }
+        await screenRetriever.getPrimaryDisplay().then((value) {
+          if (position.dy > 0 && position.dy + 350 > value.size.height) {
+            position = Offset(position.dx, value.size.height - 350);
+          } else if (position.dy < 0 && position.dy + 350 > 0) {
+            position = Offset(position.dx, -350);
+          }
 
-        //   if (position.dx > 0 && position.dx + 210 > value.size.width) {
-        //     position = Offset(value.size.width - 210, position.dy);
-        //   } else if (position.dx < 0 && position.dx + 210 > 0) {
-        //     position = Offset(-210, position.dy);
-        //   }
-        // });
+          if (position.dx > 0 && position.dx + 210 > value.size.width) {
+            position = Offset(value.size.width - 210, position.dy);
+          } else if (position.dx < 0 && position.dx + 210 > 0) {
+            position = Offset(-210, position.dy);
+          }
+        });
+        screenRetriever.getAllDisplays().then((value) {
+          for (var element in value) {
+            print('id: ${element.id}');
+            print('dx: ${element.visiblePosition!.dx}');
+            print('dy: ${element.visiblePosition!.dy}');
+          }
+        });
         windowManager.setPosition(position, animate: true);
         windowManager.focus();
         _scrollController.animateTo(0,
@@ -164,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage>
                       if (item.type == 0) {
                         Clipboard.setData(ClipboardData(text: item.text!));
                       } else if (item.type == 1) {
-                        Pasteboard.writeImage(item.image!);
+                        await Pasteboard.writeFiles([item.path!]);
                       }
                       windowManager.hide();
                       Future.delayed(const Duration(milliseconds: 40),
@@ -190,6 +201,12 @@ class _MyHomePageState extends State<MyHomePage>
               onTap: () {},
             ),
           ),
+          // SliverToBoxAdapter(
+          //   child: CustomTooltip(
+          //     message: "Show this window when you copy something",
+          //     child: Text("nihao"),
+          //   ),
+          // ),
           _getDivider(),
           SliverToBoxAdapter(
             child: PasteboardItemView(
@@ -265,6 +282,9 @@ class _MyHomePageState extends State<MyHomePage>
       }
     }
     targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
+    if (targetItem.type == 1 && targetItem.path == null) {
+      targetItem = await saveImageToLocal(targetItem);
+    }
     if (targetItem.id != null) {
       DatabaseHelper().update(targetItem);
     } else {
@@ -276,6 +296,17 @@ class _MyHomePageState extends State<MyHomePage>
       }
     }
     pasteboardItems.insert(0, targetItem);
+  }
+
+  Future<PasteboardItem> saveImageToLocal(PasteboardItem item) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path;
+    final fileName = "${item.sha256}.png";
+    final file = File('$path/$fileName');
+    await file.writeAsBytes(item.image!);
+    item.path = file.path;
+    print(item.path);
+    return item;
   }
 
   @override

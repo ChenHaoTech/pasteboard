@@ -70,7 +70,8 @@ String createPasteboardItem = '''
     text TEXT,
     image BLOB,
     sha256 TEXT UNIQUE NOT NULL,
-    create_time INTEGER NOT NULL
+    create_time INTEGER NOT NULL,
+    path TEXT
   )
 ''';
 const table = 'pasteboard_item';

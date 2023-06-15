@@ -8,6 +8,7 @@ class PasteboardItem {
   String? sha256;
   //创建时间
   int? createTime;
+  String? path;
 
   PasteboardItem(this.type,
       {this.text, this.image, this.sha256, this.createTime});
@@ -19,6 +20,7 @@ class PasteboardItem {
     image = map['image'];
     sha256 = map['sha256'];
     createTime = map['create_time'];
+    path = map['path'];
   }
 
   Map<String, dynamic> toMap() {
@@ -28,7 +30,8 @@ class PasteboardItem {
       'text': text,
       'image': image,
       'sha256': sha256,
-      'create_time': createTime
+      'create_time': createTime,
+      'path': path,
     };
   }
 }
