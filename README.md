@@ -4,7 +4,9 @@ A clipboard manager for desktop written in Flutter.
 
 | macOS | Windows | Linux |
 | :---: | :---: | :---: |
-| ✅ | ❌ | ❌ |
+| ✅ | ✅ | ❌ |
+
+`Attention: Windows not test yet.`
 
 ## Screenshots
 
