@@ -8,7 +8,7 @@ A clipboard manager for desktop written in Flutter.
 
 ## Screenshots
 
-<img src="./screenshot.png" >
+<img src="./screenshot.png" width="220" >
 
 ## Setup
 
