@@ -8,7 +8,7 @@ A clipboard manager for desktop written in Flutter.
 
 ## Screenshots
 
-![macOS](screenshots.png)
+![macOS](./screenshots.png)
 
 ## Setup
 
