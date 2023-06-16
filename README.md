@@ -27,3 +27,9 @@ A clipboard manager for desktop written in Flutter.
 4. [keypress_simulator](https://github.com/leanflutter/keypress_simulator)
 5. [hotkey_manager](https://github.com/leanflutter/hotkey_manager)
 6. [pasteboard](https://github.com/MixinNetwork/flutter-plugins/tree/main/packages/pasteboard)
+
+## License
+
+MIT License
+
+Copyright (c) 2023 这一点都不环保

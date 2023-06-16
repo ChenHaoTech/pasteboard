@@ -38,7 +38,6 @@ dependencies:
 
   clipboard_watcher: ^0.2.0
   hotkey_manager: ^0.1.7
-  cupertino_icons: ^1.0.2
   screen_retriever: ^0.1.6
   keypress_simulator: ^0.1.0
   pasteboard: ^0.2.0
