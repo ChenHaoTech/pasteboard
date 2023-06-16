@@ -200,8 +200,18 @@ class _MyHomePageState extends State<MyHomePage>
           SliverToBoxAdapter(
             child: PasteboardItemView(
               type: 'button',
-              item: PasteboardItem(0, text: "Settings"),
-              onTap: () {},
+              item: PasteboardItem(0, text: "Clear All"),
+              onTap: () async {
+                await DatabaseHelper().deleteAll();
+                for (PasteboardItem item in pasteboardItems) {
+                  if (item.type == 1) {
+                    await File(item.path!).delete();
+                  }
+                }
+                setState(() {
+                  pasteboardItems.clear();
+                });
+              },
             ),
           ),
           // SliverToBoxAdapter(

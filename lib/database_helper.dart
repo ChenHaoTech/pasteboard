@@ -53,6 +53,11 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> deleteAll() async {
+    Database db = await instance.database;
+    return await db.delete(table);
+  }
+
   Future<List<PasteboardItem>> queryAll() async {
     Database db = await instance.database;
     List<Map<String, dynamic>> map = await db.query(
