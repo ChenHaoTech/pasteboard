@@ -7,6 +7,7 @@ import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/logger.dart';
 import 'package:flutter_pasteboard/pasteboard_item.dart';
 import 'package:flutter_pasteboard/sha256_util.dart';
+import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
@@ -24,7 +25,7 @@ void main() async {
   await hotKeyManager.unregisterAll();
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(210*3, 350),
+    size: Size(210 * 3, 350),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: true,
@@ -189,6 +190,8 @@ class _MyHomePageState extends State<MyHomePage>
     clipboardWatcher.stop();
   }
 
+  var searchKey = RxString("");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,29 +202,46 @@ class _MyHomePageState extends State<MyHomePage>
             child: Container(
               padding:
                   const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
-              child: Text("History",
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                  )
-                  // style: TextStyle(color: Colors.grey.shade600),
+              child: Row(
+                children: [
+                  // 输入框, 搜索关键字
+                  Expanded(
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Search',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 16),
+                      ),
+                      onChanged: (value) {
+                        searchKey.value = value;
+                      },
+                    ),
                   ),
+                ],
+              ),
             ),
           ),
           SliverToBoxAdapter(
-            child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: pasteboardItems.length,
-                itemBuilder: (context, index) {
-                  return PasteboardItemView(
-                    index: index,
-                    item: pasteboardItems[index],
-                    onTap: () async {
-                      await doPaste(index);
-                      windowManager.hide();
-                    },
-                  );
-                }),
+            child: Obx(
+              () {
+                var data = pasteboardItems.where((element) =>
+                    element.text?.contains(searchKey.value) ?? false).toList();
+                return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      return PasteboardItemView(
+                        index: index,
+                        item: data[index],
+                        onTap: () async {
+                          await doPaste(index);
+                          windowManager.hide();
+                        },
+                      );
+                    });
+              },
+            ),
           ),
           _getDivider(),
           SliverToBoxAdapter(
