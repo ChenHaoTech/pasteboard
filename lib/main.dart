@@ -14,7 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'custom_tooltip.dart';
+import 'other/custom_tooltip.dart';
 import 'pasteboard_item_view.dart';
 
 void main() async {
@@ -24,7 +24,7 @@ void main() async {
   await hotKeyManager.unregisterAll();
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(210, 350),
+    size: Size(210*3, 350),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: true,
@@ -61,6 +61,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
 
   @override
@@ -84,31 +85,52 @@ class _MyHomePageState extends State<MyHomePage>
     scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
   );
 
+  void bindCmd1_9() {
+    var keyCodes = [
+      KeyCode.digit1,
+      KeyCode.digit2,
+      KeyCode.digit3,
+      KeyCode.digit4,
+      KeyCode.digit5,
+      KeyCode.digit6,
+      KeyCode.digit7,
+      KeyCode.digit8,
+      KeyCode.digit9,
+      KeyCode.digit0
+    ];
+    // 遍历 keycodes
+    for (var i = 0; i < keyCodes.length; i++) {
+      var keyCode = keyCodes[i];
+      var hotKey = HotKey(
+        keyCode,
+        modifiers: [KeyModifier.meta],
+        scope: HotKeyScope.inapp,
+      );
+      hotKeyManager.register(
+        hotKey,
+        keyDownHandler: (hotKey) async {
+          if (pasteboardItems.length > i) {
+            await doPaste(i);
+            windowManager.hide();
+          }
+        },
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     clipboardWatcher.addListener(this);
     clipboardWatcher.start();
+    bindCmd1_9();
 
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
         windowManager.showWithoutActive();
-        Offset position = await screenRetriever.getCursorScreenPoint();
-        await screenRetriever.getPrimaryDisplay().then((value) {
-          if (position.dy > 0 && position.dy + 350 > value.size.height) {
-            position = Offset(position.dx, value.size.height - 350);
-          } else if (position.dy < 0 && position.dy + 350 > 0) {
-            position = Offset(position.dx, -350);
-          }
-
-          if (position.dx > 0 && position.dx + 210 > value.size.width) {
-            position = Offset(value.size.width - 210, position.dy);
-          } else if (position.dx < 0 && position.dx + 210 > 0) {
-            position = Offset(-210, position.dy);
-          }
-        });
+        Offset position = await computePosition();
         // screenRetriever.getAllDisplays().then((value) {
         //   for (var element in value) {
         //     print('id: ${element.id}');
@@ -118,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage>
         //     print('height: ${element.size.height}');
         //   }
         // });
-        windowManager.setPosition(position, animate: true);
+        windowManager.setPosition(position, animate: false);
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -137,6 +159,27 @@ class _MyHomePageState extends State<MyHomePage>
         pasteboardItems.addAll(value);
       });
     });
+  }
+
+  Future<Offset> computePosition() async {
+    Offset position = await screenRetriever.getCursorScreenPoint();
+    position = await (Offset position) async {
+      await screenRetriever.getPrimaryDisplay().then((value) {
+        if (position.dy > 0 && position.dy + 350 > value.size.height) {
+          position = Offset(position.dx, value.size.height - 350);
+        } else if (position.dy < 0 && position.dy + 350 > 0) {
+          position = Offset(position.dx, -350);
+        }
+
+        if (position.dx > 0 && position.dx + 210 > value.size.width) {
+          position = Offset(value.size.width - 210, position.dy);
+        } else if (position.dx < 0 && position.dx + 210 > 0) {
+          position = Offset(-210, position.dy);
+        }
+      });
+      return position;
+    }(position);
+    return position;
   }
 
   @override
@@ -174,24 +217,8 @@ class _MyHomePageState extends State<MyHomePage>
                     index: index,
                     item: pasteboardItems[index],
                     onTap: () async {
-                      PasteboardItem item = pasteboardItems[index];
-                      if (item.type == 0) {
-                        Clipboard.setData(ClipboardData(text: item.text!));
-                      } else if (item.type == 1) {
-                        await Pasteboard.writeFiles([item.path!]);
-                      }
+                      await doPaste(index);
                       windowManager.hide();
-                      Future.delayed(const Duration(milliseconds: 40),
-                          () async {
-                        // 1.1 Simulate key down
-                        await keyPressSimulator.simulateKeyPress(
-                          key: LogicalKeyboardKey.keyV,
-                          modifiers: [
-                            ModifierKey.metaModifier,
-                          ],
-                        );
-                        // print(2);
-                      });
                     },
                   );
                 }),
@@ -238,6 +265,25 @@ class _MyHomePageState extends State<MyHomePage>
         ],
       ),
     );
+  }
+
+  Future<void> doPaste(int index) async {
+    PasteboardItem item = pasteboardItems[index];
+    if (item.type == 0) {
+      Clipboard.setData(ClipboardData(text: item.text!));
+    } else if (item.type == 1) {
+      await Pasteboard.writeFiles([item.path!]);
+    }
+    Future.delayed(const Duration(milliseconds: 40), () async {
+      // 1.1 Simulate key down
+      await keyPressSimulator.simulateKeyPress(
+        key: LogicalKeyboardKey.keyV,
+        modifiers: [
+          ModifierKey.metaModifier,
+        ],
+      );
+      // print(2);
+    });
   }
 
   SliverToBoxAdapter _getDivider() {
