@@ -37,15 +37,15 @@ dependencies:
       ref: main
 
   clipboard_watcher: ^0.2.0
-  hotkey_manager: ^0.1.7
+  hotkey_manager:
   get:
   screen_retriever: ^0.1.6
   keypress_simulator: ^0.1.0
   pasteboard: ^0.2.0
   crypto: ^3.0.3
-  sqflite: ^2.2.8+4
-  path_provider: ^2.0.15
-  logger: ^1.4.0
+  sqflite:
+  path_provider:
+  logger:
   popover: ^0.2.8+2
   
 dev_dependencies:
@@ -57,7 +57,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -5,15 +5,13 @@ class PasteboardItemView extends StatelessWidget {
   const PasteboardItemView({
     Key? key,
     required this.item,
-    this.index,
+    required this.index,
     this.onTap,
     this.onLongPress,
-    this.type = "item",
   }) : super(key: key);
 
 // default: item, button
-  final String type;
-  final int? index;
+  final int index;
   final PasteboardItem item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -41,32 +39,38 @@ class PasteboardItemView extends StatelessWidget {
 
   Widget _getWidget(PasteboardItem item, BuildContext context) {
     if (item.type == 0 && item.text != null) {
-      return Text(
-        index != null ? "$index. ${item.text}" : item.text!,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: type == 'button'
-            ? TextStyle(color: Theme.of(context).colorScheme.primary)
-            : null,
-      );
-    } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
       return Row(
         children: [
-          index != null
-              ? Text(
-                  "$index. ",
-                  style: type == 'button'
-                      ? TextStyle(color: Theme.of(context).colorScheme.primary)
-                      : null,
-                )
-              : SizedBox.shrink(),
+          Expanded(
+            child: Text(
+              // 文字
+              item.text!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ),
+          Text(
+            "cmd+${index+1}",
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+        ],
+      );
+    } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
+      // 图片
+      return Row(
+        children: [
           Expanded(
               child: Image.memory(
             item.image!,
             width: double.infinity,
             height: 40,
             fit: BoxFit.cover,
-          ))
+          )),
+          Text(
+            "cmd+${index+1}",
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
         ],
       );
     }

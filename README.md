@@ -33,3 +33,21 @@ A clipboard manager for desktop written in Flutter.
 MIT License
 
 Copyright (c) 2023 这一点都不环保
+
+
+
+## TODO
+**feature**
+- [] command+option+p : pin windo 置顶窗口  setAlwaysOnTop
+- [] widnow can resize able
+- [] window can move able
+- [] search text auto focus
+  - [https://github.com/leanflutter](https://github.com/leanflutter/window_manager)
+- [] fix why restart cannnot bind keyboard
+- [] why flutter: │ ⛔ DatabaseException(Error Domain=FMDatabase Code=2067 "UNIQUE constraint failed: pasteboard_item.sha256" UserInfo={NSLocalizedDescription=UNIQUE constraint failed: pasteboard_item.sha256}) sql 'INSERT INTO pasteboard_item (id, type, text, image, sha256, create_time, path) VALUES (NULL, ?, ?, NULL, ?, ?, NULL)' args [0, data, 3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a9..., 1691768093461]
+- [] 窗口位置算的不太准
+
+
+- [] Linux support
+- [] Windows test
+- [] Linux test

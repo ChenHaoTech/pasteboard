@@ -15,7 +15,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'other/custom_tooltip.dart';
 import 'pasteboard_item_view.dart';
 
 void main() async {
@@ -77,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   final HotKey _hotKey = HotKey(
     KeyCode.keyV,
-    modifiers: [KeyModifier.meta, KeyModifier.shift],
+    modifiers: [KeyModifier.meta, KeyModifier.alt, KeyModifier.control],
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
@@ -86,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage>
     scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
   );
 
-  void bindCmd1_9() {
+  Function bindCmd1_9() {
     var keyCodes = [
       KeyCode.digit1,
       KeyCode.digit2,
@@ -97,27 +96,39 @@ class _MyHomePageState extends State<MyHomePage>
       KeyCode.digit7,
       KeyCode.digit8,
       KeyCode.digit9,
-      KeyCode.digit0
     ];
+    var hotKeys = [];
     // 遍历 keycodes
     for (var i = 0; i < keyCodes.length; i++) {
       var keyCode = keyCodes[i];
       var hotKey = HotKey(
         keyCode,
         modifiers: [KeyModifier.meta],
-        scope: HotKeyScope.inapp,
+        scope: HotKeyScope.system,
       );
+      hotKeys.add(hotKeys);
       hotKeyManager.register(
         hotKey,
         keyDownHandler: (hotKey) async {
-          if (pasteboardItems.length > i) {
-            await doPaste(i);
+          var data = pasteboardItems
+              .where(
+                  (element) => element.text?.contains(searchKey.value) ?? false)
+              .toList();
+          if (data.length > i) {
+            await doAsyncPaste(i);
             windowManager.hide();
           }
         },
       );
     }
+    return (){
+      for (var element in hotKeys) {
+        hotKeyManager.unregister(element);
+      }
+      logger.i("restore hotkey");
+    };
   }
+  Function restoreHandle = (){};
 
   @override
   void initState() {
@@ -125,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage>
     _scrollController = ScrollController();
     clipboardWatcher.addListener(this);
     clipboardWatcher.start();
-    bindCmd1_9();
+    restoreHandle = bindCmd1_9();
 
     hotKeyManager.register(
       _hotKey,
@@ -201,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage>
           SliverToBoxAdapter(
             child: Container(
               padding:
-                  const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
+              const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
               child: Row(
                 children: [
                   // 输入框, 搜索关键字
@@ -213,6 +224,7 @@ class _MyHomePageState extends State<MyHomePage>
                         contentPadding: EdgeInsets.only(left: 16),
                       ),
                       onChanged: (value) {
+                        //todo 做个 debounce?
                         searchKey.value = value;
                       },
                     ),
@@ -223,9 +235,10 @@ class _MyHomePageState extends State<MyHomePage>
           ),
           SliverToBoxAdapter(
             child: Obx(
-              () {
+                  () {
+                var sk = searchKey.value;
                 var data = pasteboardItems.where((element) =>
-                    element.text?.contains(searchKey.value) ?? false).toList();
+                element.text?.contains(sk) ?? false).toList();
                 return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -235,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage>
                         index: index,
                         item: data[index],
                         onTap: () async {
-                          await doPaste(index);
+                          await doAsyncPaste(index);
                           windowManager.hide();
                         },
                       );
@@ -243,58 +256,19 @@ class _MyHomePageState extends State<MyHomePage>
               },
             ),
           ),
-          _getDivider(),
-          SliverToBoxAdapter(
-            child: PasteboardItemView(
-              type: 'button',
-              item: PasteboardItem(0, text: "Clear All"),
-              onTap: () async {
-                await DatabaseHelper().deleteAll();
-                for (PasteboardItem item in pasteboardItems) {
-                  if (item.type == 1) {
-                    await File(item.path!).delete();
-                  }
-                }
-                setState(() {
-                  pasteboardItems.clear();
-                });
-              },
-            ),
-          ),
-          // SliverToBoxAdapter(
-          //   child: CustomTooltip(
-          //     message: "Show this window when you copy something",
-          //     child: Text("nihao"),
-          //   ),
-          // ),
-          _getDivider(),
-          SliverToBoxAdapter(
-            child: PasteboardItemView(
-              type: 'button',
-              item: PasteboardItem(0, text: "Quit App"),
-              onTap: () {
-                //quit app
-                windowManager.destroy();
-                windowManager.close();
-              },
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 6),
-          )
         ],
       ),
     );
   }
 
-  Future<void> doPaste(int index) async {
+  Future<void> doAsyncPaste(int index) async {
     PasteboardItem item = pasteboardItems[index];
     if (item.type == 0) {
       Clipboard.setData(ClipboardData(text: item.text!));
     } else if (item.type == 1) {
       await Pasteboard.writeFiles([item.path!]);
     }
-    Future.delayed(const Duration(milliseconds: 40), () async {
+    return Future.delayed(const Duration(milliseconds: 40), () async {
       // 1.1 Simulate key down
       await keyPressSimulator.simulateKeyPress(
         key: LogicalKeyboardKey.keyV,
@@ -305,49 +279,21 @@ class _MyHomePageState extends State<MyHomePage>
       // print(2);
     });
   }
-
-  SliverToBoxAdapter _getDivider() {
-    return SliverToBoxAdapter(
-        child: Column(
-      children: [
-        const SizedBox(
-          height: 6,
-        ),
-        Container(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.expand(height: 1.0),
-          child: const Divider(),
-        ),
-        const SizedBox(
-          height: 6,
-        ),
-      ],
-    ));
-  }
-
-  Color getColor(int index) {
-    if (index % 2 == 0) {
-      return Colors.deepPurple.shade50;
-    } else {
-      return Colors.deepPurple.shade50;
-    }
-  }
-
   @override
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
     ClipboardData? newClipboardData =
-        await Clipboard.getData(Clipboard.kTextPlain);
+    await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
       String text = newClipboardData.text!.trim();
       String sha256 = SHA256Util.calculateSHA256ForText(text);
-      targetItem = PasteboardItem(0, text: text, sha256: sha256);
+      targetItem = PasteboardItem(0, text: text, sha256: sha256); // 文字
     }
     final image = await Pasteboard.image;
     if (image != null) {
       String sha256 = SHA256Util.calculateSHA256(image);
-      targetItem = PasteboardItem(1, image: image, sha256: sha256);
+      targetItem = PasteboardItem(1, image: image, sha256: sha256);//图片
     }
     if (targetItem == null) {
       return;
@@ -360,7 +306,9 @@ class _MyHomePageState extends State<MyHomePage>
         break;
       }
     }
-    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
+    targetItem!.createTime = DateTime
+        .now()
+        .millisecondsSinceEpoch;
     if (targetItem.type == 1 && targetItem.path == null) {
       targetItem = await saveImageToLocal(targetItem);
     }
@@ -392,6 +340,8 @@ class _MyHomePageState extends State<MyHomePage>
   void onWindowBlur() {
     //hide window when blur
     windowManager.hide();
+    logger.i("onWindowBlur");
+    restoreHandle();
   }
 
   @override
