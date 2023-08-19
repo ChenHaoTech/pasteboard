@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pasteboard/pasteboard_item.dart';
+import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 
 class PasteboardItemView extends StatelessWidget {
   const PasteboardItemView({

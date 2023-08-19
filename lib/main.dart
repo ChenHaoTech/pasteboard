@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/MetaIntent.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
-import 'package:flutter_pasteboard/logger.dart';
-import 'package:flutter_pasteboard/pasteboard_item.dart';
-import 'package:flutter_pasteboard/sha256_util.dart';
+import 'package:flutter_pasteboard/utils/logger.dart';
+import 'package:flutter_pasteboard/utils/sha256_util.dart';
+import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
@@ -15,7 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'pasteboard_item_view.dart';
+import 'vm_view/pasteboard_item_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,11 @@ void main() async {
   );
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     // await windowManager.show();
-    // await windowManager.focus();
+    // await windowManager.focus()return (){
+    //         for (var element in hotKeys) {
+    //           hotKeyManager.unregister(element);
+    //         }
+    //       };;
   });
   windowManager.hide();
   windowManager.setMovable(false);
@@ -107,28 +112,29 @@ class _MyHomePageState extends State<MyHomePage>
         scope: HotKeyScope.system,
       );
       hotKeys.add(hotKeys);
-      hotKeyManager.register(
-        hotKey,
-        keyDownHandler: (hotKey) async {
-          var data = pasteboardItems
-              .where(
-                  (element) => element.text?.contains(searchKey.value) ?? false)
-              .toList();
-          if (data.length > i) {
-            await doAsyncPaste(i);
-            windowManager.hide();
-          }
-        },
-      );
+      // hotKeyManager.register(
+      //   hotKey,
+      //   keyDownHandler: (hotKey) async {
+      //     var data = pasteboardItems
+      //         .where(
+      //             (element) => element.text?.contains(searchKey.value) ?? false)
+      //         .toList();
+      //     if (data.length > i) {
+      //       await doAsyncPaste(i);
+      //       windowManager.hide();
+      //     }
+      //   },
+      // );
     }
-    return (){
+    return () {
       for (var element in hotKeys) {
         hotKeyManager.unregister(element);
       }
       logger.i("restore hotkey");
     };
   }
-  Function restoreHandle = (){};
+
+  Function restoreHandle = () {};
 
   @override
   void initState() {
@@ -205,58 +211,73 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
+    var scrollView = CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        buildSearchEditor(),
+        buildPasteboardHis(),
+      ],
+    );
     return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              padding:
-              const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
-              child: Row(
-                children: [
-                  // 输入框, 搜索关键字
-                  Expanded(
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.only(left: 16),
-                      ),
-                      onChanged: (value) {
-                        //todo 做个 debounce?
-                        searchKey.value = value;
-                      },
-                    ),
-                  ),
-                ],
+      body: MenuWidget(
+        metaIntent: MetaIntent(),
+        onMetaAction: (context) {
+          print("fuck meta");
+        },
+        child: scrollView,
+      ),
+    );
+  }
+
+  SliverToBoxAdapter buildPasteboardHis() {
+    return SliverToBoxAdapter(
+      child: Obx(
+        () {
+          var sk = searchKey.value;
+          var data = pasteboardItems
+              .where((element) => element.text?.contains(sk) ?? false)
+              .toList();
+          return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                return PasteboardItemView(
+                  index: index,
+                  item: data[index],
+                  onTap: () async {
+                    await doAsyncPaste(index);
+                    windowManager.hide();
+                  },
+                );
+              });
+        },
+      ),
+    );
+  }
+
+  SliverToBoxAdapter buildSearchEditor() {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
+        child: Row(
+          children: [
+            // 输入框, 搜索关键字
+            Expanded(
+              child: TextField(
+                decoration: const InputDecoration(
+                  hintText: 'Search',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.only(left: 16),
+                ),
+                onChanged: (value) {
+                  //todo 做个 debounce?
+                  searchKey.value = value;
+                },
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Obx(
-                  () {
-                var sk = searchKey.value;
-                var data = pasteboardItems.where((element) =>
-                element.text?.contains(sk) ?? false).toList();
-                return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      return PasteboardItemView(
-                        index: index,
-                        item: data[index],
-                        onTap: () async {
-                          await doAsyncPaste(index);
-                          windowManager.hide();
-                        },
-                      );
-                    });
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -279,11 +300,12 @@ class _MyHomePageState extends State<MyHomePage>
       // print(2);
     });
   }
+
   @override
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
     ClipboardData? newClipboardData =
-    await Clipboard.getData(Clipboard.kTextPlain);
+        await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
       String text = newClipboardData.text!.trim();
@@ -293,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage>
     final image = await Pasteboard.image;
     if (image != null) {
       String sha256 = SHA256Util.calculateSHA256(image);
-      targetItem = PasteboardItem(1, image: image, sha256: sha256);//图片
+      targetItem = PasteboardItem(1, image: image, sha256: sha256); //图片
     }
     if (targetItem == null) {
       return;
@@ -306,9 +328,7 @@ class _MyHomePageState extends State<MyHomePage>
         break;
       }
     }
-    targetItem!.createTime = DateTime
-        .now()
-        .millisecondsSinceEpoch;
+    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
     if (targetItem.type == 1 && targetItem.path == null) {
       targetItem = await saveImageToLocal(targetItem);
     }
