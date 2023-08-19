@@ -10,7 +10,7 @@ import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:flutter_pasteboard/utils/sha256_util.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
-// import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
