@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage>
 
   void bindHotKey() async {
     await hotKeyManager.unregisterAll();
-    _registerHokKey_test();
+    bind1_9();
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
@@ -83,7 +83,6 @@ class _HomePageState extends State<HomePage>
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-        _registerHokKey_test();
         setState(() {});
       },
       // Only works on macOS.
@@ -94,27 +93,36 @@ class _HomePageState extends State<HomePage>
     });
   }
 
-  void _registerHokKey_test() {
-    var hotKey = HotKey(
-        KeyCode.digit1,
-        modifiers: [KeyModifier.meta],
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+  Future<void> bind1_9() async {
+    var digitKey = [
+      KeyCode.digit1,
+      KeyCode.digit2,
+      KeyCode.digit3,
+      KeyCode.digit4,
+      KeyCode.digit5,
+      KeyCode.digit6,
+      KeyCode.digit7,
+      KeyCode.digit8,
+      KeyCode.digit9
+    ];
+    var hotKeyList = <HotKey>[];
+    for (var value in digitKey) {
+      hotKeyList.add(
+        HotKey(
+          value,
+          modifiers: [KeyModifier.meta],
+          scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+        ),
       );
-    hotKeyManager.register(
-      hotKey,
-      keyDownHandler: (hotKey) async {
-        EasyLoading.showSuccess("loading...");
-        await keyPressSimulator.simulateKeyPress(
-            key: LogicalKeyboardKey.meta, keyDown: false);
-        Future.delayed(
-          0.milliseconds,
-          () {
-            windowManager.hide();
-            PasteUtils.doAsyncPaste(pasteboardItems[0]);
-          },
-        );
-      },
-    );
+    }
+    for (int i = 0; i < hotKeyList.length; i++) {
+      var ht = hotKeyList[i];
+      await hotKeyManager.unregister(ht);
+      hotKeyManager.register(ht, keyDownHandler: (hotKey) async {
+        await windowManager.hide();
+        PasteUtils.doAsyncPaste(pasteboardItems[i]);
+      });
+    }
   }
 
   Future<Offset> computePosition() async {
