@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage>
       body: MetaIntentWidget(
         onAction: (int digKey) {
           // EasyLoading.showSuccess('loading...');
-          doAsyncPaste(digKey);
+          PasteUtils.doAsyncPaste(pasteboardItems[digKey]);
           logger.i("MetaIntentWidget, dig: ${digKey} ");
           windowManager.hide();
         },
@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage>
                   index: index,
                   item: data[index],
                   onTap: () async {
-                    await doAsyncPaste(index);
+                    await PasteUtils.doAsyncPaste(pasteboardItems[index]);
                     windowManager.hide();
                   },
                 );
@@ -194,21 +194,6 @@ class _HomePageState extends State<HomePage>
         ),
       ),
     );
-  }
-
-  Future<void> doAsyncPaste(int index) async {
-    PasteboardItem item = pasteboardItems[index];
-    if (item.type == 0) {
-      Clipboard.setData(ClipboardData(text: item.text!));
-    } else if (item.type == 1) {
-      await Pasteboard.writeFiles([item.path!]);
-    }
-    var future = Future.delayed(const Duration(milliseconds: 40), () async {
-      // 1.1 Simulate key down
-      await keyPressSimulator.simulateCtrlVKeyPress();
-      // print(2);
-    });
-    return future;
   }
 
   @override
@@ -275,5 +260,21 @@ class _HomePageState extends State<HomePage>
   @override
   void onWindowFocus() {
     // print('onWindowFocus');
+  }
+}
+
+class PasteUtils {
+  static Future<void> doAsyncPaste(PasteboardItem item) async {
+    if (item.type == 0) {
+      Clipboard.setData(ClipboardData(text: item.text!));
+    } else if (item.type == 1) {
+      await Pasteboard.writeFiles([item.path!]);
+    }
+    var future = Future.delayed(const Duration(milliseconds: 40), () async {
+      // 1.1 Simulate key down
+      await keyPressSimulator.simulateCtrlVKeyPress();
+      // print(2);
+    });
+    return future;
   }
 }
