@@ -3,6 +3,36 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
 
+
+/*DEMO
+KeyboardBindingWidget _test_buildKeyboardBindingWidget(
+      CustomScrollView scrollView) {
+    return KeyboardBindingWidget(
+      onMetaAction: (MetaIntent intent, BuildContext context) {
+        logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
+        EasyLoading.showSuccess("loading...");
+        Future.delayed(0.milliseconds, () {
+          windowManager.hide();
+          PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
+        });
+      },
+      metaIntentSet: {meta_1: MetaIntent(1)},
+      child: scrollView,
+    );
+  }
+
+  MetaIntentWidget buildMetaIntentWidget(CustomScrollView scrollView) {
+    return MetaIntentWidget(
+      onAction: (int digKey) {
+        // EasyLoading.showSuccess('loading...');
+        PasteUtils.doAsyncPaste(pasteboardItems[digKey]);
+        logger.i("MetaIntentWidget, dig: ${digKey} ");
+        windowManager.hide();
+      },
+      child: scrollView,
+    );
+  }
+* */
 /*meta+ dig0~9*/
 final meta_0 = LogicalKeySet(
   LogicalKeyboardKey.meta, // Replace with control on Windows

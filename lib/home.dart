@@ -4,7 +4,7 @@ import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_pasteboard/MetaIntent.dart';
+import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:flutter_pasteboard/utils/sha256_util.dart';
@@ -168,34 +168,6 @@ class _HomePageState extends State<HomePage>
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: scrollView,
-    );
-  }
-
-  KeyboardBindingWidget _test_buildKeyboardBindingWidget(
-      CustomScrollView scrollView) {
-    return KeyboardBindingWidget(
-      onMetaAction: (MetaIntent intent, BuildContext context) {
-        logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
-        EasyLoading.showSuccess("loading...");
-        Future.delayed(0.milliseconds, () {
-          windowManager.hide();
-          PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
-        });
-      },
-      metaIntentSet: {meta_1: MetaIntent(1)},
-      child: scrollView,
-    );
-  }
-
-  MetaIntentWidget buildMetaIntentWidget(CustomScrollView scrollView) {
-    return MetaIntentWidget(
-      onAction: (int digKey) {
-        // EasyLoading.showSuccess('loading...');
-        PasteUtils.doAsyncPaste(pasteboardItems[digKey]);
-        logger.i("MetaIntentWidget, dig: ${digKey} ");
-        windowManager.hide();
-      },
-      child: scrollView,
     );
   }
 
