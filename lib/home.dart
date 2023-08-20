@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage>
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
-        windowManager.showWithoutActive();
+        windowManager.show();
         Offset position = await computePosition();
         // screenRetriever.getAllDisplays().then((value) {
         //   for (var element in value) {
@@ -284,11 +284,6 @@ class PasteUtils {
     } else if (item.type == 1) {
       await Pasteboard.writeFiles([item.path!]);
     }
-    var future = Future.delayed(const Duration(milliseconds: 40), () async {
-      // 1.1 Simulate key down
-      await keyPressSimulator.simulateCtrlVKeyPress();
-      // print(2);
-    });
-    return future;
+    return await keyPressSimulator.simulateCtrlVKeyPress();
   }
 }
