@@ -136,8 +136,10 @@ class _HomePageState extends State<HomePage>
       body: KeyboardBindingWidget(
         onMetaAction: (MetaIntent intent, BuildContext context) {
           logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
-          PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
-          windowManager.hide();
+          Future.delayed(100.milliseconds, () {
+            windowManager.hide();
+            PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
+          });
         },
         metaIntentSet: {meta_1: MetaIntent(1)},
         child: scrollView,

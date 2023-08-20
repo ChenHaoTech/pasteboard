@@ -49,6 +49,7 @@ dependencies:
   popover: ^0.2.8+2
   collection: ^1.18.0
   flutter_easyloading: ^3.0.5
+  desktop_multi_window: ^0.2.0
 
 dev_dependencies:
   flutter_test:

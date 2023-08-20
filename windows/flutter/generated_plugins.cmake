@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   clipboard_watcher
+  desktop_multi_window
   hotkey_manager
   keypress_simulator
   pasteboard
