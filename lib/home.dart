@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage>
 
   void bindHotKey() {
     hotKeyManager.unregisterAll();
-     hotKeyManager.register(
+    hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
         windowManager.showWithoutActive();
@@ -132,15 +132,28 @@ class _HomePageState extends State<HomePage>
       ],
     );
     return Scaffold(
-      body: MetaIntentWidget(
-        onAction: (int digKey) {
-          // EasyLoading.showSuccess('loading...');
-          PasteUtils.doAsyncPaste(pasteboardItems[digKey]);
-          logger.i("MetaIntentWidget, dig: ${digKey} ");
+      // body: buildMetaIntentWidget(scrollView),
+      body: KeyboardBindingWidget(
+        onMetaAction: (MetaIntent intent, BuildContext context) {
+          logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
+          PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
           windowManager.hide();
         },
+        metaIntentSet: {meta_1: MetaIntent(1)},
         child: scrollView,
       ),
+    );
+  }
+
+  MetaIntentWidget buildMetaIntentWidget(CustomScrollView scrollView) {
+    return MetaIntentWidget(
+      onAction: (int digKey) {
+        // EasyLoading.showSuccess('loading...');
+        PasteUtils.doAsyncPaste(pasteboardItems[digKey]);
+        logger.i("MetaIntentWidget, dig: ${digKey} ");
+        windowManager.hide();
+      },
+      child: scrollView,
     );
   }
 
