@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:flutter_pasteboard/utils/sha256_util.dart';
@@ -112,17 +110,25 @@ class _HomePageState extends State<HomePage>
           value,
           modifiers: [KeyModifier.meta],
           scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+          identifier: "cmd+$value",
         ),
       );
     }
-    for (int i = 0; i < hotKeyList.length; i++) {
-      var ht = hotKeyList[i];
-      await hotKeyManager.unregister(ht);
-      hotKeyManager.register(ht, keyDownHandler: (hotKey) async {
-        await windowManager.hide();
-        PasteUtils.doAsyncPaste(pasteboardItems[i]);
-      });
-    }
+    hotKeyManager.onRawKeyEvent = (event) async {
+      print(
+          "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
+      for (int i = 0; i < digitKey.length; i++) {
+        if (RawKeyboard.instance.keysPressed.length == 2 &&
+            event.isKeyPressed(digitKey[i].logicalKey) &&
+            event.isMetaPressed) {
+          if (pasteboardItems.length > i) {
+            await windowManager.hide();
+            await PasteUtils.doAsyncPaste(pasteboardItems[i]);
+            return true;
+          }
+        }
+      }
+    };
   }
 
   Future<Offset> computePosition() async {
@@ -280,9 +286,14 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  void onWindowBlur() {
+  void onWindowBlur() async {
     //hide window when blur
     windowManager.hide();
+    // 100 ms 后清楚键盘, 这个 bug 官方还没解决
+    // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
+    await Future.delayed(100.milliseconds);
+    // ignore: invalid_use_of_visible_for_testing_member
+    RawKeyboard.instance.clearKeysPressed();
   }
 
   @override
@@ -298,6 +309,7 @@ class PasteUtils {
     } else if (item.type == 1) {
       await Pasteboard.writeFiles([item.path!]);
     }
+    // ignore: deprecated_member_use
     return await keyPressSimulator.simulateCtrlVKeyPress();
   }
 }
