@@ -38,6 +38,9 @@ dependencies:
 
   clipboard_watcher: ^0.2.0
   hotkey_manager:
+    git:
+      url: git@github.com:chenhaoaixuexi/hotkey_manager.git
+      ref: main
   get:
   screen_retriever: ^0.1.6
   keypress_simulator: ^0.1.0

@@ -62,8 +62,9 @@ class _HomePageState extends State<HomePage>
     });
   }
 
-  void bindHotKey() {
-    hotKeyManager.unregisterAll();
+  void bindHotKey() async {
+    await hotKeyManager.unregisterAll();
+    _registerHokKey_test();
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
@@ -82,6 +83,7 @@ class _HomePageState extends State<HomePage>
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        _registerHokKey_test();
         setState(() {});
       },
       // Only works on macOS.
@@ -90,6 +92,29 @@ class _HomePageState extends State<HomePage>
     hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
       windowManager.hide();
     });
+  }
+
+  void _registerHokKey_test() {
+    var hotKey = HotKey(
+        KeyCode.digit1,
+        modifiers: [KeyModifier.meta],
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      );
+    hotKeyManager.register(
+      hotKey,
+      keyDownHandler: (hotKey) async {
+        EasyLoading.showSuccess("loading...");
+        await keyPressSimulator.simulateKeyPress(
+            key: LogicalKeyboardKey.meta, keyDown: false);
+        Future.delayed(
+          0.milliseconds,
+          () {
+            windowManager.hide();
+            PasteUtils.doAsyncPaste(pasteboardItems[0]);
+          },
+        );
+      },
+    );
   }
 
   Future<Offset> computePosition() async {
@@ -133,17 +158,24 @@ class _HomePageState extends State<HomePage>
     );
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
-      body: KeyboardBindingWidget(
-        onMetaAction: (MetaIntent intent, BuildContext context) {
-          logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
-          Future.delayed(100.milliseconds, () {
-            windowManager.hide();
-            PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
-          });
-        },
-        metaIntentSet: {meta_1: MetaIntent(1)},
-        child: scrollView,
-      ),
+      // body: _test_buildKeyboardBindingWidget(scrollView),
+      body: scrollView,
+    );
+  }
+
+  KeyboardBindingWidget _test_buildKeyboardBindingWidget(
+      CustomScrollView scrollView) {
+    return KeyboardBindingWidget(
+      onMetaAction: (MetaIntent intent, BuildContext context) {
+        logger.i("MetaIntentWidget, dig: ${intent.digKey} ");
+        EasyLoading.showSuccess("loading...");
+        Future.delayed(0.milliseconds, () {
+          windowManager.hide();
+          PasteUtils.doAsyncPaste(pasteboardItems[intent.digKey]);
+        });
+      },
+      metaIntentSet: {meta_1: MetaIntent(1)},
+      child: scrollView,
     );
   }
 
