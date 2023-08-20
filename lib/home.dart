@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage>
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-        setState(() {});
+        _searchFsn.requestFocus();
       },
       // Only works on macOS.
       keyUpHandler: (hotKey) {},
@@ -198,6 +198,7 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
+  final FocusNode _searchFsn = FocusNode();
 
   SliverToBoxAdapter buildSearchEditor() {
     return SliverToBoxAdapter(
@@ -208,6 +209,8 @@ class _HomePageState extends State<HomePage>
             // 输入框, 搜索关键字
             Expanded(
               child: TextField(
+                autofocus: true,
+                focusNode: _searchFsn,
                 decoration: const InputDecoration(
                   hintText: 'Search',
                   border: InputBorder.none,
