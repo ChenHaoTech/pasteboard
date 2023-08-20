@@ -34,16 +34,16 @@ class _HomePageState extends State<HomePage>
   ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
   late ScrollController _scrollController;
 
-  // final HotKey _hotKey = HotKey(
-  //   KeyCode.keyV,
-  //   modifiers: [KeyModifier.meta, KeyModifier.alt, KeyModifier.control],
-  //   // Set hotkey scope (default is HotKeyScope.system)
-  //   scope: HotKeyScope.system, // Set as inapp-wide hotkey.
-  // );
-  // final HotKey _escKey = HotKey(
-  //   KeyCode.escape,
-  //   scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-  // );
+  final HotKey _hotKey = HotKey(
+    KeyCode.keyV,
+    modifiers: [KeyModifier.meta, KeyModifier.alt, KeyModifier.control],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+  );
+  final HotKey _escKey = HotKey(
+    KeyCode.escape,
+    scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+  );
 
   @override
   void initState() {
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage>
     clipboardWatcher.addListener(this);
     clipboardWatcher.start();
 
-    // bindHotKey();
+    bindHotKey();
     windowManager.addListener(this);
 
     DatabaseHelper().queryAll().then((value) {
@@ -62,34 +62,35 @@ class _HomePageState extends State<HomePage>
     });
   }
 
-  // void bindHotKey() {
-  //    hotKeyManager.register(
-  //     _hotKey,
-  //     keyDownHandler: (hotKey) async {
-  //       windowManager.showWithoutActive();
-  //       Offset position = await computePosition();
-  //       // screenRetriever.getAllDisplays().then((value) {
-  //       //   for (var element in value) {
-  //       //     print('id: ${element.id}');
-  //       //     print('dx: ${element.visiblePosition!.dx}');
-  //       //     print('dy: ${element.visiblePosition!.dy}');
-  //       //     print('width: ${element.size.width}');
-  //       //     print('height: ${element.size.height}');
-  //       //   }
-  //       // });
-  //       windowManager.setPosition(position, animate: false);
-  //       windowManager.focus();
-  //       _scrollController.animateTo(0,
-  //           duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-  //       setState(() {});
-  //     },
-  //     // Only works on macOS.
-  //     keyUpHandler: (hotKey) {},
-  //   );
-  //   hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
-  //     windowManager.hide();
-  //   });
-  // }
+  void bindHotKey() {
+    hotKeyManager.unregisterAll();
+     hotKeyManager.register(
+      _hotKey,
+      keyDownHandler: (hotKey) async {
+        windowManager.showWithoutActive();
+        Offset position = await computePosition();
+        // screenRetriever.getAllDisplays().then((value) {
+        //   for (var element in value) {
+        //     print('id: ${element.id}');
+        //     print('dx: ${element.visiblePosition!.dx}');
+        //     print('dy: ${element.visiblePosition!.dy}');
+        //     print('width: ${element.size.width}');
+        //     print('height: ${element.size.height}');
+        //   }
+        // });
+        windowManager.setPosition(position, animate: false);
+        windowManager.focus();
+        _scrollController.animateTo(0,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        setState(() {});
+      },
+      // Only works on macOS.
+      keyUpHandler: (hotKey) {},
+    );
+    hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
+      windowManager.hide();
+    });
+  }
 
   Future<Offset> computePosition() async {
     Offset position = await screenRetriever.getCursorScreenPoint();

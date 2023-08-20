@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'home.dart';
@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Must add this line.
   await windowManager.ensureInitialized();
-  // await hotKeyManager.unregisterAll();
+  await hotKeyManager.unregisterAll();
 
   WindowOptions windowOptions = const WindowOptions(
     size: Size(210 * 3, 350),
