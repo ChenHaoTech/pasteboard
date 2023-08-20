@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:clipboard_watcher/clipboard_watcher.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:flutter_pasteboard/utils/sha256_util.dart';
@@ -26,11 +28,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+
 class _HomePageState extends State<HomePage>
     with ClipboardListener, WindowListener {
-  List<PasteboardItem> pasteboardItems = [];
   ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
   late ScrollController _scrollController;
+  late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
 
   final HotKey _hotKey = HotKey(
     KeyCode.keyV,
@@ -52,12 +55,6 @@ class _HomePageState extends State<HomePage>
 
     bindHotKey();
     windowManager.addListener(this);
-
-    DatabaseHelper().queryAll().then((value) {
-      setState(() {
-        pasteboardItems.addAll(value);
-      });
-    });
   }
 
   void bindHotKey() async {
@@ -115,12 +112,15 @@ class _HomePageState extends State<HomePage>
       );
     }
     hotKeyManager.onRawKeyEvent = (event) async {
-      print(
+      if (kDebugMode) {
+        print(
           "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
+      }
       for (int i = 0; i < digitKey.length; i++) {
         if (RawKeyboard.instance.keysPressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&
             event.isMetaPressed) {
+          var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
           if (pasteboardItems.length > i) {
             await windowManager.hide();
             await PasteUtils.doAsyncPaste(pasteboardItems[i]);
@@ -159,8 +159,6 @@ class _HomePageState extends State<HomePage>
     clipboardWatcher.stop();
   }
 
-  var searchKey = RxString("");
-
   @override
   Widget build(BuildContext context) {
     var scrollView = CustomScrollView(
@@ -181,10 +179,7 @@ class _HomePageState extends State<HomePage>
     return SliverToBoxAdapter(
       child: Obx(
         () {
-          var sk = searchKey.value;
-          var data = pasteboardItems
-              .where((element) => element.text?.contains(sk) ?? false)
-              .toList();
+          var data = clipboardVM.pasteboardItemsWithSearchKey;
           return ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -194,7 +189,7 @@ class _HomePageState extends State<HomePage>
                   index: index,
                   item: data[index],
                   onTap: () async {
-                    await PasteUtils.doAsyncPaste(pasteboardItems[index]);
+                    await PasteUtils.doAsyncPaste(data[index]);
                     windowManager.hide();
                   },
                 );
@@ -220,7 +215,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 onChanged: (value) {
                   //todo 做个 debounce?
-                  searchKey.value = value;
+                  clipboardVM.searchKey.value = value;
                 },
               ),
             ),
@@ -249,11 +244,11 @@ class _HomePageState extends State<HomePage>
     if (targetItem == null) {
       return;
     }
-    for (int i = 0; i < pasteboardItems.length; i++) {
-      PasteboardItem item = pasteboardItems[i];
+    for (int i = 0; i < clipboardVM.pasteboardItems.length; i++) {
+      PasteboardItem item = clipboardVM.pasteboardItems[i];
       if (item.sha256 == targetItem!.sha256) {
         targetItem = item;
-        pasteboardItems.removeAt(i);
+        clipboardVM.pasteboardItems.removeAt(i);
         break;
       }
     }
@@ -271,7 +266,7 @@ class _HomePageState extends State<HomePage>
         return;
       }
     }
-    pasteboardItems.insert(0, targetItem);
+    clipboardVM.pasteboardItems.insert(0, targetItem);
   }
 
   Future<PasteboardItem> saveImageToLocal(PasteboardItem item) async {
