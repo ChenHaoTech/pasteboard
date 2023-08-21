@@ -44,14 +44,17 @@ class PasteboardItemView extends StatelessWidget {
   }
 
   Widget _getWidget(PasteboardItem item, BuildContext context) {
-    if (item.type == 0 && item.text != null) {
+    var text = item.text;
+    if (item.type == 0 && text != null) {
+      var split = text.split("\n");
+      text = split.length>3? "${split.sublist(0,3).join("\n")}...": text;
       return Row(
         children: [
           Expanded(
             child: Text(
               // 文字
-              item.text!,
-              maxLines: 1,
+              text,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Theme
                   .of(context)

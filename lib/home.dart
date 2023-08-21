@@ -301,7 +301,7 @@ class _HomePageState extends State<HomePage>
 
         // todo 跑快点的时候 会有问题, 滚动不准
         var curOffset = _scrollController.offset;
-        EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset");
+        // EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset");
         var fsnOffset = fsn?.rect.top ?? 0;
         // if (curOffset < fsnOffset) {
         //   // _scrollController.offset
