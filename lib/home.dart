@@ -5,6 +5,7 @@ import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/database_helper.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
@@ -84,6 +85,19 @@ class _HomePageState extends State<HomePage>
       },
     );
     hotKeyManager.register(
+      HotKey(
+        KeyCode.keyC,
+        modifiers: [KeyModifier.meta],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        var items = clipboardVM.pasteboardItemsWithSearchKey.where((p0) => p0.selected.value);
+        PasteUtils.doAsyncPasteMerge(items.toList());
+      },
+    );
+
+    hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
         windowManager.show();
@@ -102,12 +116,25 @@ class _HomePageState extends State<HomePage>
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
         _searchFsn.requestFocus();
+        windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
       },
       // Only works on macOS.
       keyUpHandler: (hotKey) {},
     );
     hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
-      windowManager.hide();
+      var selectedItems = PasteboardItem.selectedItems;
+      if(selectedItems.isNotEmpty){
+        //todo 还有 bug
+        for (var value in selectedItems) {
+          value.selected.value = false;
+        }
+        return;
+      }
+      if(clipboardVM.alwaysOnTop.value){
+        windowManager.blur();
+      }else{
+        hideWindow();
+      }
     });
   }
 
@@ -139,7 +166,6 @@ class _HomePageState extends State<HomePage>
       //   print(
       //     "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
       // }
-      isMetaPressed = event.isMetaPressed;
       for (int i = 0; i < digitKey.length; i++) {
         if (RawKeyboard.instance.keysPressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&
@@ -155,7 +181,12 @@ class _HomePageState extends State<HomePage>
     };
   }
 
-  bool isMetaPressed = false;
+  // 定义一个 isMetaPressed get
+  bool get isMetaPressed {
+    return RawKeyboard.instance.keysPressed
+            .contains(LogicalKeyboardKey.metaLeft) ||
+        RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.metaRight);
+  }
 
   Future<Offset> computePosition() async {
     Offset position = await screenRetriever.getCursorScreenPoint();
@@ -235,7 +266,7 @@ class _HomePageState extends State<HomePage>
           } else {
             // 没有 cmd 直接粘贴
             await PasteUtils.doAsyncPaste(item);
-            windowManager.hide();
+            hideWindow();
           }
         },
       );
@@ -274,19 +305,17 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  var alwaysOnTop = RxBool(false);
-
   ElevatedButton buildPinWindowBtn() {
     return ElevatedButton(onPressed: () async {
       await togglePin();
     }, child: Obx(() {
-      return Text((alwaysOnTop.value) ? 'Unpin' : 'Pin');
+      return Text((clipboardVM.alwaysOnTop.value) ? 'Unpin' : 'Pin');
     }));
   }
 
   Future<void> togglePin() async {
-    await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
-    alwaysOnTop.value = !alwaysOnTop.value;
+    await windowManager.setAlwaysOnTop(!clipboardVM.alwaysOnTop.value);
+    clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
   }
 
   ElevatedButton buildCreateWindowBtn() {
@@ -366,16 +395,19 @@ class _HomePageState extends State<HomePage>
 
   @override
   void onWindowBlur() async {
-    if (alwaysOnTop.value) {
-      return;
+    if (!clipboardVM.alwaysOnTop.value) {
+      //hide window when blur
+      hideWindow();
     }
-    //hide window when blur
-    windowManager.hide();
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
     await Future.delayed(100.milliseconds);
     // ignore: invalid_use_of_visible_for_testing_member
     RawKeyboard.instance.clearKeysPressed();
+  }
+
+  void hideWindow() {
+    windowManager.hide();
   }
 
   @override
@@ -391,6 +423,25 @@ class PasteUtils {
     } else if (item.type == 1) {
       await Pasteboard.writeFiles([item.path!]);
     }
+    // ignore: deprecated_member_use
+    return await keyPressSimulator.simulateCtrlVKeyPress();
+  }
+
+  static Future<void> doAsyncPasteMerge(List<PasteboardItem> items) async {
+    if(items.isEmpty){
+      EasyLoading.showInfo("No selected content");
+      return;
+    }
+    var resStr = "";
+    for (var item in items) {
+      if (item.type == 0) {
+        // todo 支持更多样的文本格式
+        resStr += "\n${item.text!}";
+      } else if (item.type == 1) {
+        EasyLoading.showSuccess("type: ${item.type},🚧WIP");
+      }
+    }
+    Clipboard.setData(ClipboardData(text: resStr));
     // ignore: deprecated_member_use
     return await keyPressSimulator.simulateCtrlVKeyPress();
   }

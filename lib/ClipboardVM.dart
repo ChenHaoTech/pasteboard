@@ -7,6 +7,7 @@ class ClipboardVM extends GetxController {
   final pasteboardItems = RxList<PasteboardItem>();
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
   final searchKey = RxString("");
+  final  alwaysOnTop = RxBool(false);
 
   @override
   void onInit() {
