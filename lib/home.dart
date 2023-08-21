@@ -114,10 +114,10 @@ class _HomePageState extends State<HomePage>
       );
     }
     hotKeyManager.onRawKeyEvent = (event) async {
-      if (kDebugMode) {
-        print(
-          "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
-      }
+      // if (kDebugMode) {
+      //   print(
+      //     "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
+      // }
       for (int i = 0; i < digitKey.length; i++) {
         if (RawKeyboard.instance.keysPressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -8,14 +12,23 @@ import 'package:window_manager/window_manager.dart';
 import 'ClipboardVM.dart';
 import 'home.dart';
 
-void main() async {
+void main(List<String> args) async {
+  if (args.firstOrNull == 'multi_window') {
+    final windowId = int.parse(args[1]);
+    final argument = args[2].isEmpty
+        ? const {}
+        : jsonDecode(args[2]) as Map<String, dynamic>;
+    runApp(ExampleSubWindow(
+      windowController: WindowController.fromWindowId(windowId),
+      args: argument,
+    ));
+    return;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   // Must add this line.
-  logger.i("windowManager.ensureInitialized() begin");
   await windowManager.ensureInitialized();
-  logger.i("windowManager.ensureInitialized()");
   await hotKeyManager.unregisterAll();
-  logger.i("hotKeyManager.unregisterAll()");
   WindowOptions windowOptions = const WindowOptions(
     size: Size(210 * 3, 350),
     center: true,
@@ -31,7 +44,6 @@ void main() async {
   windowManager.show();
   windowManager.setMovable(true);
   windowManager.setResizable(true);
-  logger.i("windowManager.show()");
   Get.put(ClipboardVM());
   runApp(const MyApp());
   configLoading();
@@ -51,7 +63,7 @@ void configLoading() {
     ..maskColor = Colors.blue.withOpacity(0.5)
     ..userInteractions = true
     ..dismissOnTap = false;
-    // ..customAnimation = CustomAnimation();
+  // ..customAnimation = CustomAnimation();
 }
 
 class MyApp extends StatelessWidget {

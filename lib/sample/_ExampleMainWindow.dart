@@ -11,7 +11,7 @@ void main(List<String> args) {
     final argument = args[2].isEmpty
         ? const {}
         : jsonDecode(args[2]) as Map<String, dynamic>;
-    runApp(_ExampleSubWindow(
+    runApp(ExampleSubWindow(
       windowController: WindowController.fromWindowId(windowId),
       args: argument,
     ));
@@ -82,8 +82,8 @@ class _ExampleMainWindowState extends State<ExampleMainWindow> {
   }
 }
 
-class _ExampleSubWindow extends StatelessWidget {
-  const _ExampleSubWindow({
+class ExampleSubWindow extends StatelessWidget {
+  const ExampleSubWindow({
     Key? key,
     required this.windowController,
     required this.args,
