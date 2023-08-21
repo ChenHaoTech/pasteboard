@@ -105,49 +105,6 @@ class _HomePageState extends State<HomePage>
       },
     );
     hotKeyManager.register(
-      HotKey(
-        KeyCode.keyC,
-        modifiers: [KeyModifier.meta],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-      ),
-      keyDownHandler: (hotKey) async {
-        var items = clipboardVM.pasteboardItemsWithSearchKey
-            .where((p0) => p0.selected.value)
-            .toList();
-        await PasteUtils.doAsyncPasteMerge(items.reversed.toList());
-        EasyLoading.showSuccess("copy success");
-      },
-    );
-    // command + plus 调高透明度
-    hotKeyManager.register(
-      HotKey(
-        KeyCode.equal,
-        modifiers: [KeyModifier.meta],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-      ),
-      keyDownHandler: (hotKey) async {
-        var opac = await windowManager.getOpacity();
-        windowManager.setOpacity(opac + 0.1);
-      },
-    );
-    // command + minus 调低透明度
-    hotKeyManager.register(
-      HotKey(
-        KeyCode.minus,
-        modifiers: [KeyModifier.meta],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-      ),
-      keyDownHandler: (hotKey) async {
-        var opac = await windowManager.getOpacity();
-        windowManager.setOpacity(opac - 0.1);
-      },
-    );
-    // up + down 移动 光标焦点
-
-    hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
         windowManager.show();
@@ -168,7 +125,7 @@ class _HomePageState extends State<HomePage>
         curFocusIdx = -1;
         windowManager.focus();
         _scrollController.animateTo(0,
-            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+            duration: const Duration(milliseconds: 0), curve: Curves.easeOut);
         _searchFsn.requestFocus();
         windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
       },
@@ -287,14 +244,42 @@ class _HomePageState extends State<HomePage>
       metaIntentSet: {
         LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
+        LogicalKeySet(LogicalKeyboardKey.equal,LogicalKeyboardKey.meta): const CustomIntent("meta_="),
+        LogicalKeySet(LogicalKeyboardKey.minus,LogicalKeyboardKey.meta): const CustomIntent("meta_-"),
+        LogicalKeySet(KeyCode.keyC.logicalKey,LogicalKeyboardKey.meta): const CustomIntent("copy"),
       },
-      onMetaAction: (CustomIntent intent, BuildContext context) {
+      onMetaAction: (CustomIntent intent, BuildContext context) async{
         var lastFsn = focusNodeMap[curFocusIdx];
+        var step = 20;
         switch (intent.key) {
           case "up":
             curFocusIdx = max(curFocusIdx - 1, 0);
+            break;
           case "down":
             curFocusIdx = min(curFocusIdx + 1, focusNodeMap.length - 1);
+            break;
+          case "meta_=":
+            var size = await windowManager.getSize();
+            size = Size(size.width + step, size.height + step);
+            windowManager.setSize(size,animate: true);
+            return;
+          case "meta_-":
+            var size = await windowManager.getSize();
+            size = Size(size.width - step, size.height - step);
+            windowManager.setSize(size,animate: true);
+            return;
+          case "copy":
+            var items = clipboardVM.pasteboardItemsWithSearchKey
+                .where((p0) => p0.selected.value)
+                .toList();
+            var list = items.reversed.toList();
+            if(await PasteUtils.doAsyncPasteMerge(list)){
+              EasyLoading.showSuccess("copy success,count:${list.length}");
+            }
+            return;
+          default:
+            EasyLoading.showSuccess("unknow: ${intent.key}");
+            return;
         }
         var fsn = focusNodeMap[curFocusIdx];
         if (fsn == null) {
@@ -311,7 +296,6 @@ class _HomePageState extends State<HomePage>
         //   // _scrollController.offset
         // }
         var diff = fsnOffset - (lastFsn?.rect.top ?? 0);
-        ;
         var targetOffset = curFocusIdx == 0 ? 0.0 : curOffset + diff;
         _scrollController.animateTo(targetOffset,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -529,10 +513,10 @@ class PasteUtils {
     return await keyPressSimulator.simulateCtrlVKeyPress();
   }
 
-  static Future<void> doAsyncPasteMerge(List<PasteboardItem> items) async {
+  static Future<bool> doAsyncPasteMerge(List<PasteboardItem> items) async {
     if (items.isEmpty) {
-      EasyLoading.showInfo("No selected content");
-      return;
+      await EasyLoading.showInfo("No selected content");
+      return false;
     }
     var resStr = "";
     for (var item in items) {
@@ -545,6 +529,7 @@ class PasteUtils {
     }
     Clipboard.setData(ClipboardData(text: resStr));
     // ignore: deprecated_member_use
-    return await keyPressSimulator.simulateCtrlVKeyPress();
+    await keyPressSimulator.simulateCtrlVKeyPress();
+    return true;
   }
 }

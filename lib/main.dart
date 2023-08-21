@@ -4,7 +4,6 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
-import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -41,7 +40,7 @@ void main(List<String> args) async {
     await windowManager.show();
   });
   // windowManager.hide();
-  windowManager.show();
+  // windowManager.show();
   windowManager.setMovable(true);
   windowManager.setResizable(true);
   Get.put(ClipboardVM());
