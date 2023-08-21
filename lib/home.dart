@@ -377,8 +377,9 @@ class _HomePageState extends State<HomePage>
                 decoration: const InputDecoration(
                   hintText: 'Search',
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.only(left: 16),
+                  contentPadding: EdgeInsets.only(left: 9),
                 ),
+                style: const TextStyle(fontSize: 14),
                 onChanged: (value) {
                   //todo 做个 debounce?
                   clipboardVM.searchKey.value = value;

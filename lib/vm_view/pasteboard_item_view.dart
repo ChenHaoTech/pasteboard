@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 
@@ -74,7 +73,7 @@ class PasteboardItemView extends StatelessWidget {
                 text!,
                 maxLines: maxLine,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary,fontSize: 13),
               );
             }),
           ),
