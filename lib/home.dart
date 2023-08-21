@@ -50,10 +50,6 @@ class _HomePageState extends State<HomePage>
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
-  final HotKey _escKey = HotKey(
-    KeyCode.escape,
-    scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-  );
 
   @override
   void initState() {
