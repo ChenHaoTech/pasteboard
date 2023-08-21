@@ -111,7 +111,9 @@ class _HomePageState extends State<HomePage>
         //     print('height: ${element.size.height}');
         //   }
         // });
-        windowManager.setPosition(position, animate: false);
+        if (!await windowManager.isVisible()) {
+          windowManager.setPosition(position, animate: false);
+        }
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
