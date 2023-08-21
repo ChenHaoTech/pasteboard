@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 
 class PasteboardItemView extends StatelessWidget {
+
   const PasteboardItemView({
     Key? key,
     required this.item,
     required this.index,
     this.onTap,
     this.onLongPress,
+    this.color,
   }) : super(key: key);
 
 // default: item, button
   final int index;
+  final Color? color;
   final PasteboardItem item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -19,6 +22,7 @@ class PasteboardItemView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: color,
       padding: const EdgeInsets.only(left: 6, right: 6, top: 1, bottom: 1),
       child: Material(
         borderRadius: BorderRadius.circular(6),

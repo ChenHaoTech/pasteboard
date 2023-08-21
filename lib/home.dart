@@ -116,6 +116,7 @@ class _HomePageState extends State<HomePage>
       //   print(
       //     "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
       // }
+      isMetaPressed = event.isMetaPressed;
       for (int i = 0; i < digitKey.length; i++) {
         if (RawKeyboard.instance.keysPressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&
@@ -130,6 +131,8 @@ class _HomePageState extends State<HomePage>
       }
     };
   }
+
+  bool isMetaPressed = false;
 
   Future<Offset> computePosition() async {
     Offset position = await screenRetriever.getCursorScreenPoint();
@@ -178,25 +181,41 @@ class _HomePageState extends State<HomePage>
   SliverToBoxAdapter buildPasteboardHis() {
     return SliverToBoxAdapter(
       child: Obx(
-        () {
+            () {
           var data = clipboardVM.pasteboardItemsWithSearchKey;
           return ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: data.length,
               itemBuilder: (context, index) {
-                return PasteboardItemView(
-                  index: index,
-                  item: data[index],
-                  onTap: () async {
-                    await PasteUtils.doAsyncPaste(data[index]);
-                    windowManager.hide();
-                  },
-                );
+                return buildPasteboardItemView(index, data);
               });
         },
       ),
     );
+  }
+
+  Widget buildPasteboardItemView(int index,
+      RxList<PasteboardItem> data) {
+    var item = data[index];
+    return Obx(() {
+      var selected = item.selected;
+      return PasteboardItemView(
+        index: index,
+        item: item,
+        // 选中了就深紫色 ,没有选中就正常色
+        color: selected.value ?  Colors.deepPurple.shade300: Colors.deepPurple.shade50,
+        onTap: () async {
+          if (isMetaPressed) {
+            item.selected.value = !(selected.value);
+          } else {
+            // 没有 cmd 直接粘贴
+            await PasteUtils.doAsyncPaste(item);
+            windowManager.hide();
+          }
+        },
+      );
+    });
   }
 
   final FocusNode _searchFsn = FocusNode();
@@ -266,7 +285,7 @@ class _HomePageState extends State<HomePage>
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
     ClipboardData? newClipboardData =
-        await Clipboard.getData(Clipboard.kTextPlain);
+    await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
       String text = newClipboardData.text!.trim();
@@ -289,7 +308,9 @@ class _HomePageState extends State<HomePage>
         break;
       }
     }
-    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
+    targetItem!.createTime = DateTime
+        .now()
+        .millisecondsSinceEpoch;
     if (targetItem.type == 1 && targetItem.path == null) {
       targetItem = await saveImageToLocal(targetItem);
     }

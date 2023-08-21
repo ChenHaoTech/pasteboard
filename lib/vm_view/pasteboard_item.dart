@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:get/get.dart';
+
 class PasteboardItem {
+  var selected = RxBool(false);
   int? id;
   String? text;
   Uint8List? image;
