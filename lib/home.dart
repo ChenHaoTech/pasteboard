@@ -284,6 +284,10 @@ class _HomePageState extends State<HomePage>
       ],
     );
     child = KeyboardBindingWidget<CustomIntent>(
+      metaIntentSet: {
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
+      },
       onMetaAction: (CustomIntent intent, BuildContext context) {
         var lastFsn = focusNodeMap[curFocusIdx];
         switch (intent.key) {
@@ -311,10 +315,6 @@ class _HomePageState extends State<HomePage>
         var targetOffset = curFocusIdx == 0 ? 0.0 : curOffset + diff;
         _scrollController.animateTo(targetOffset,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-      },
-      metaIntentSet: {
-        LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
       },
       child: child,
     );
