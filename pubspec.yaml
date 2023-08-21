@@ -32,15 +32,11 @@ dependencies:
     sdk: flutter
     
   window_manager: 
-    git:
-      url: https://github.com/aholeye/window_manager.git
-      ref: main
+    path: package/window_manager
 
   clipboard_watcher: ^0.2.0
   hotkey_manager:
-    git:
-      url: git@github.com:chenhaoaixuexi/hotkey_manager.git
-      ref: main
+    path: package/hotkey_manager
   get:
   screen_retriever: ^0.1.6
   keypress_simulator: ^0.1.0
@@ -53,6 +49,7 @@ dependencies:
   collection: ^1.18.0
   flutter_easyloading: ^3.0.5
   desktop_multi_window:
+    path: package/desktop_multi_window
   desktop_lifecycle:
 
 dev_dependencies:
