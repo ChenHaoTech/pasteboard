@@ -51,6 +51,7 @@ dependencies:
   desktop_multi_window:
     path: package/desktop_multi_window
   desktop_lifecycle:
+    path: package/desktop_lifecycle
 
 dev_dependencies:
   flutter_test:
