@@ -19,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'obsolete/MetaIntent.dart';
 import 'vm_view/pasteboard_item_view.dart';
 
 class HomePage extends StatefulWidget {
@@ -38,7 +39,12 @@ class _HomePageState extends State<HomePage>
 
   final HotKey _hotKey = HotKey(
     KeyCode.keyV,
-    modifiers: [KeyModifier.meta, KeyModifier.alt, KeyModifier.control],
+    modifiers: [
+      KeyModifier.meta,
+      KeyModifier.alt,
+      KeyModifier.control,
+      KeyModifier.shift
+    ],
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
@@ -61,6 +67,19 @@ class _HomePageState extends State<HomePage>
   void bindHotKey() async {
     await hotKeyManager.unregisterAll();
     bind1_9();
+    //cmd + f 聚焦搜索栏
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.keyF,
+        modifiers: [KeyModifier.meta],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        _searchFsn.requestFocus();
+      },
+    );
+
     // todo only 测试环境
     hotKeyManager.register(
       HotKey(
@@ -92,10 +111,39 @@ class _HomePageState extends State<HomePage>
         scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
       ),
       keyDownHandler: (hotKey) async {
-        var items = clipboardVM.pasteboardItemsWithSearchKey.where((p0) => p0.selected.value);
-        PasteUtils.doAsyncPasteMerge(items.toList());
+        var items = clipboardVM.pasteboardItemsWithSearchKey
+            .where((p0) => p0.selected.value);
+        await PasteUtils.doAsyncPasteMerge(items.toList());
+        EasyLoading.showSuccess("copy success");
       },
     );
+    // command + plus 调高透明度
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.equal,
+        modifiers: [KeyModifier.meta],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        var opac = await windowManager.getOpacity();
+        windowManager.setOpacity(opac + 0.1);
+      },
+    );
+    // command + minus 调低透明度
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.minus,
+        modifiers: [KeyModifier.meta],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        var opac = await windowManager.getOpacity();
+        windowManager.setOpacity(opac - 0.1);
+      },
+    );
+    // up + down 移动 光标焦点
 
     hotKeyManager.register(
       _hotKey,
@@ -114,6 +162,8 @@ class _HomePageState extends State<HomePage>
         if (!await windowManager.isVisible()) {
           windowManager.setPosition(position, animate: false);
         }
+        focusNodeMap[curFocusIdx]?.unfocus();
+        curFocusIdx = -1;
         windowManager.focus();
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -125,16 +175,20 @@ class _HomePageState extends State<HomePage>
     );
     hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
       var selectedItems = PasteboardItem.selectedItems;
-      if(selectedItems.isNotEmpty){
+      if (selectedItems.isNotEmpty) {
         //todo 还有 bug
         for (var value in selectedItems) {
           value.selected.value = false;
         }
         return;
       }
-      if(clipboardVM.alwaysOnTop.value){
+      if(clipboardVM.searchKey.isNotEmpty){
+        clipboardVM.searchKey.value = "";
+        return;
+      }
+      if (clipboardVM.alwaysOnTop.value) {
         windowManager.blur();
-      }else{
+      } else {
         hideWindow();
       }
     });
@@ -220,17 +274,39 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    var scrollView = CustomScrollView(
+    Widget child = CustomScrollView(
       controller: _scrollController,
       slivers: [
         buildSearchEditor(),
         buildPasteboardHis(),
       ],
     );
+    child = KeyboardBindingWidget<CustomIntent>(
+      onMetaAction: (CustomIntent intent, BuildContext context) {
+        var lastFsn = focusNodeMap[curFocusIdx];
+        switch (intent.key) {
+          case "up":
+            curFocusIdx--;
+          case "down":
+            curFocusIdx++;
+        }
+        var fsn = focusNodeMap[curFocusIdx];
+        if (fsn == null) {
+          lastFsn?.unfocus();
+        } else {
+          fsn.requestFocus();
+        }
+      },
+      metaIntentSet: {
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
+      },
+      child: child,
+    );
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
-      body: scrollView,
+      body: child,
     );
   }
 
@@ -251,11 +327,17 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  var curFocusIdx = -1;
+  var focusNodeMap = <int, FocusNode>{};
+
   Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
+    focusNodeMap.update(index, (value) => FocusNode(),
+        ifAbsent: () => FocusNode());
     return Obx(() {
       var selected = item.selected;
       return PasteboardItemView(
+        focusNode: focusNodeMap[index],
         index: index,
         item: item,
         // 选中了就深紫色 ,没有选中就正常色
@@ -296,6 +378,9 @@ class _HomePageState extends State<HomePage>
                 onChanged: (value) {
                   //todo 做个 debounce?
                   clipboardVM.searchKey.value = value;
+                  focusNodeMap[curFocusIdx]?.unfocus();
+                  focusNodeMap.clear();
+                  curFocusIdx = -1;
                 },
               ),
             ),
@@ -430,7 +515,7 @@ class PasteUtils {
   }
 
   static Future<void> doAsyncPasteMerge(List<PasteboardItem> items) async {
-    if(items.isEmpty){
+    if (items.isEmpty) {
       EasyLoading.showInfo("No selected content");
       return;
     }

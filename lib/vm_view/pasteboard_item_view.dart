@@ -9,7 +9,7 @@ class PasteboardItemView extends StatelessWidget {
     required this.index,
     this.onTap,
     this.onLongPress,
-    this.color,
+    this.color, this.focusNode,
   }) : super(key: key);
 
 // default: item, button
@@ -18,6 +18,7 @@ class PasteboardItemView extends StatelessWidget {
   final PasteboardItem item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +30,13 @@ class PasteboardItemView extends StatelessWidget {
         // color: getColor(index),
         // color: Colors.deepPurple.shade50,
         child: InkWell(
+          focusNode: focusNode ?? FocusNode(),
           borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),
           onLongPress: onLongPress == null ? null : () => onLongPress!(),
           child: Ink(
               padding:
-                  const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
+              const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
               child: _getWidget(item, context)),
         ),
       ),
@@ -51,12 +53,18 @@ class PasteboardItemView extends StatelessWidget {
               item.text!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(color: Theme
+                  .of(context)
+                  .colorScheme
+                  .primary),
             ),
           ),
           Text(
-            "cmd+${index+1}",
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            index < 9 ? "cmd+${index + 1}" : "",
+            style: TextStyle(color: Theme
+                .of(context)
+                .colorScheme
+                .primary),
           ),
         ],
       );
@@ -66,14 +74,17 @@ class PasteboardItemView extends StatelessWidget {
         children: [
           Expanded(
               child: Image.memory(
-            item.image!,
-            width: double.infinity,
-            height: 40,
-            fit: BoxFit.cover,
-          )),
+                item.image!,
+                width: double.infinity,
+                height: 40,
+                fit: BoxFit.cover,
+              )),
           Text(
-            "cmd+${index+1}",
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            index < 9 ? "cmd+${index + 1}" : "",
+            style: TextStyle(color: Theme
+                .of(context)
+                .colorScheme
+                .primary),
           ),
         ],
       );

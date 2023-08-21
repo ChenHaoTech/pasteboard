@@ -1,8 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_pasteboard/utils/logger.dart';
-
 
 /*DEMO
 KeyboardBindingWidget _test_buildKeyboardBindingWidget(
@@ -110,22 +107,30 @@ class MetaIntentWidget extends StatelessWidget {
         meta_8: MetaIntent(8),
         meta_9: MetaIntent(9),
       },
-      onMetaAction: (MetaIntent intent, BuildContext context) {
-        logger.i("MetaIntentWidget, dig: ${intent} ");
-        EasyLoading.showToast("fuck, ${intent.digKey}");
-        onAction(intent.digKey);
+      onMetaAction: (Intent intent, BuildContext context) {
+        // if()
+        // logger.i("MetaIntentWidget, dig: ${intent} ");
+        // EasyLoading.showToast("fuck, ${intent.digKey}");
+        // onAction(intent.digKey);
       },
       child: child,
     );
   }
 }
 
-class KeyboardBindingWidget extends StatelessWidget {
-  late Map<LogicalKeySet, Intent> metaIntentSet;
-  late Function(MetaIntent intent, BuildContext context) onMetaAction;
-  late Widget child;
+class CustomIntent extends Intent {
+  final dynamic data;
+  final String key;
 
-  KeyboardBindingWidget({
+  const CustomIntent(this.key, {this.data});
+}
+
+class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
+  final Map<LogicalKeySet, T> metaIntentSet;
+  final Function(T intent, BuildContext context) onMetaAction;
+  final Widget child;
+
+  const KeyboardBindingWidget({
     Key? key,
     required this.child,
     required this.onMetaAction,
@@ -138,8 +143,8 @@ class KeyboardBindingWidget extends StatelessWidget {
       autofocus: true,
       shortcuts: metaIntentSet,
       actions: <Type, Action<Intent>>{
-        MetaIntent: CallbackAction<MetaIntent>(
-          onInvoke: (MetaIntent intent) => onMetaAction.call(intent, context),
+        T: CallbackAction<T>(
+          onInvoke: (T intent) => onMetaAction.call(intent, context),
         ),
       },
       child: child,
