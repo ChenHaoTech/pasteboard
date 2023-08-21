@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
@@ -29,7 +28,6 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-
 
 class _HomePageState extends State<HomePage>
     with ClipboardListener, WindowListener {
@@ -200,6 +198,7 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
+
   final FocusNode _searchFsn = FocusNode();
 
   SliverToBoxAdapter buildSearchEditor() {
@@ -224,13 +223,26 @@ class _HomePageState extends State<HomePage>
                 },
               ),
             ),
-            buildCreateWindow(),
+            // buildCreateWindowBtn(),
+            buildPinWindowBtn(),
           ],
         ),
       ),
     );
   }
-  ElevatedButton buildCreateWindow() {
+
+  var alwaysOnTop = RxBool(false);
+
+  ElevatedButton buildPinWindowBtn() {
+    return ElevatedButton(onPressed: () async {
+      await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
+      alwaysOnTop.value = !alwaysOnTop.value;
+    }, child: Obx(() {
+      return Text((alwaysOnTop.value) ? 'Unpin' : 'Pin');
+    }));
+  }
+
+  ElevatedButton buildCreateWindowBtn() {
     return ElevatedButton(
       onPressed: () async {
         final window = await DesktopMultiWindow.createWindow(jsonEncode({
@@ -307,6 +319,9 @@ class _HomePageState extends State<HomePage>
 
   @override
   void onWindowBlur() async {
+    if (alwaysOnTop.value) {
+      return;
+    }
     //hide window when blur
     windowManager.hide();
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
