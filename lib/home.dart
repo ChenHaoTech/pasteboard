@@ -17,6 +17,7 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -145,7 +146,7 @@ class _HomePageState extends State<HomePage>
             event.isMetaPressed) {
           var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
           if (pasteboardItems.length > i) {
-            await windowManager.hide();
+            await hideWindow();
             await PasteUtils.doAsyncPaste(pasteboardItems[i]);
             return true;
           }
@@ -216,7 +217,7 @@ class _HomePageState extends State<HomePage>
         LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
             const CustomIntent("meta_f"),
         LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
-        const CustomIntent("meta_p"),
+            const CustomIntent("meta_p"),
         LogicalKeySet(KeyCode.escape.logicalKey): const CustomIntent("esc"),
       },
       onMetaAction: (CustomIntent intent, BuildContext context) async {
@@ -227,7 +228,7 @@ class _HomePageState extends State<HomePage>
             togglePin();
             return;
           case "meta_,":
-            EasyLoading.showInfo("🚧") ;
+            EasyLoading.showInfo("🚧");
             return;
           case "meta_f":
             _searchFsn.requestFocus();
@@ -366,7 +367,7 @@ class _HomePageState extends State<HomePage>
   SliverToBoxAdapter buildSearchEditor() {
     return SliverToBoxAdapter(
       child: Container(
-        padding: const EdgeInsets.only(left: 16, top: 6, bottom: 6, right: 16),
+        padding: const EdgeInsets.only(left: 16, right: 16),
         child: Row(
           children: [
             // 输入框, 搜索关键字
@@ -375,7 +376,7 @@ class _HomePageState extends State<HomePage>
                 autofocus: true,
                 focusNode: _searchFsn,
                 decoration: const InputDecoration(
-                  hintText: 'Search',
+                  hintText: 'search',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.only(left: 9),
                 ),
@@ -433,19 +434,28 @@ class _HomePageState extends State<HomePage>
   @override
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
-    ClipboardData? newClipboardData =
-        await Clipboard.getData(Clipboard.kTextPlain);
-    if (newClipboardData?.text != null &&
-        newClipboardData!.text!.trim().isNotEmpty) {
-      String text = newClipboardData.text!.trim();
+    RichClipboardData rData = await RichClipboard.getData();
+    // ClipboardData? newClipboardData =
+    //     await Clipboard.getData(Clipboard.kTextPlain);
+    if (rData.text != null && rData.text!.trim().isNotEmpty) {
+      //这里可以做 一些插件
+      String text = rData.text!.trim();
       String sha256 = SHA256Util.calculateSHA256ForText(text);
-      targetItem = PasteboardItem(0, text: text, sha256: sha256); // 文字
+      targetItem = PasteboardItem(PasteboardItemType.text,
+          text: text, sha256: sha256); // 文字
+    } else if (rData.html != null && rData.html!.trim().isNotEmpty) {
+      String html = rData.html!.trim();
+      String sha256 = SHA256Util.calculateSHA256ForText(html);
+      targetItem = PasteboardItem(PasteboardItemType.html,
+          html: html, sha256: sha256); // html
     }
     final image = await Pasteboard.image;
     if (image != null) {
       String sha256 = SHA256Util.calculateSHA256(image);
-      targetItem = PasteboardItem(1, image: image, sha256: sha256); //图片
+      targetItem = PasteboardItem(PasteboardItemType.image,
+          image: image, sha256: sha256); //图片
     }
+    // 如果 都没有, 就获取剪切板失败
     if (targetItem == null) {
       return;
     }
@@ -462,10 +472,10 @@ class _HomePageState extends State<HomePage>
       targetItem = await saveImageToLocal(targetItem);
     }
     if (targetItem.id != null) {
-      DatabaseHelper().update(targetItem);
+      DatabaseHelper.instance.update(targetItem);
     } else {
       try {
-        targetItem = await DatabaseHelper().insert(targetItem);
+        targetItem = await DatabaseHelper.instance.insert(targetItem);
       } catch (e) {
         logger.e(e);
         return;
@@ -504,8 +514,8 @@ class _HomePageState extends State<HomePage>
     RawKeyboard.instance.clearKeysPressed();
   }
 
-  void hideWindow() {
-    windowManager.hide();
+  Future<void> hideWindow() async {
+    return await windowManager.hide();
   }
 
   @override
@@ -516,9 +526,11 @@ class _HomePageState extends State<HomePage>
 
 class PasteUtils {
   static Future<void> doAsyncPaste(PasteboardItem item) async {
-    if (item.type == 0) {
+    if (item.type == PasteboardItemType.text) {
       Clipboard.setData(ClipboardData(text: item.text!));
-    } else if (item.type == 1) {
+    } else if (item.type == PasteboardItemType.html) {
+      RichClipboard.setData(RichClipboardData(text: item.html!));
+    } else if (item.type == PasteboardItemType.image) {
       await Pasteboard.writeFiles([item.path!]);
     }
     // ignore: deprecated_member_use

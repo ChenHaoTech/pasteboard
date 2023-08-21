@@ -21,7 +21,7 @@ class ClipboardVM extends GetxController {
       pasteboardItemsWithSearchKey.clear();
       pasteboardItemsWithSearchKey.addAll(pasteboardItems.where(predict));
     });
-    DatabaseHelper().queryAll().then((value) {
+    DatabaseHelper.instance.query().then((value) {
       pasteboardItems.addAll(value);
     });
   }

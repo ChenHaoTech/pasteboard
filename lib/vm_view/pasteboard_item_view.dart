@@ -54,7 +54,7 @@ class PasteboardItemView extends StatelessWidget {
   Widget _getWidget(PasteboardItem item, BuildContext context) {
     hover.value = false;
     var text = item.text;
-    if (item.type == 0 && text != null) {
+    if (item.type == PasteboardItemType.text && text != null) {
       var maxLine = 3;
       return Row(
         children: [
@@ -83,7 +83,7 @@ class PasteboardItemView extends StatelessWidget {
           ),
         ],
       );
-    } else if (item.type == 1 && item.image != null && item.image!.isNotEmpty) {
+    } else if (item.type == PasteboardItemType.image && item.image != null && item.image!.isNotEmpty) {
       // 图片
       return Row(
         children: [

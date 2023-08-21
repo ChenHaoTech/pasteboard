@@ -8,9 +8,8 @@ class DatabaseHelper {
 
   // 私有构造函数
   DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
-  factory DatabaseHelper() => instance;
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   static Database? _database;
 
@@ -58,11 +57,12 @@ class DatabaseHelper {
     return await db.delete(table);
   }
 
-  Future<List<PasteboardItem>> queryAll() async {
+  Future<List<PasteboardItem>> query({int limit = 100}) async {
     Database db = await instance.database;
     List<Map<String, dynamic>> map = await db.query(
       table,
       orderBy: 'create_time DESC',
+      limit: limit,
     );
     return map.map((e) => PasteboardItem.fromMap(e)).toList();
   }
