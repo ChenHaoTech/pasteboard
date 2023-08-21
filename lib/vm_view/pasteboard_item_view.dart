@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
+import 'package:get/get.dart';
 
 class PasteboardItemView extends StatelessWidget {
-
-  const PasteboardItemView({
+  PasteboardItemView({
     Key? key,
     required this.item,
     required this.index,
     this.onTap,
     this.onLongPress,
-    this.color, this.focusNode,
+    this.color,
+    this.focusNode,
   }) : super(key: key);
 
 // default: item, button
@@ -17,8 +19,11 @@ class PasteboardItemView extends StatelessWidget {
   final Color? color;
   final PasteboardItem item;
   final VoidCallback? onTap;
+
+  // final ValueChanged<bool>? onHover;
   final VoidCallback? onLongPress;
   final FocusNode? focusNode;
+  var hover = Rx(false);
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +38,14 @@ class PasteboardItemView extends StatelessWidget {
           focusNode: focusNode ?? FocusNode(),
           borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),
+          onHover: (hovering) {
+            hover.value = hovering;
+            // EasyLoading.showSuccess("hover: $hovering");
+          },
           onLongPress: onLongPress == null ? null : () => onLongPress!(),
           child: Ink(
               padding:
-              const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
+                  const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
               child: _getWidget(item, context)),
         ),
       ),
@@ -44,30 +53,34 @@ class PasteboardItemView extends StatelessWidget {
   }
 
   Widget _getWidget(PasteboardItem item, BuildContext context) {
+    hover.value = false;
     var text = item.text;
     if (item.type == 0 && text != null) {
-      var split = text.split("\n");
-      text = split.length>3? "${split.sublist(0,3).join("\n")}...": text;
+      var maxLine = 3;
       return Row(
         children: [
           Expanded(
-            child: Text(
-              // 文字
-              text,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Theme
-                  .of(context)
-                  .colorScheme
-                  .primary),
-            ),
+            child: Obx(() {
+              var isHovering= hover.value;
+              if(isHovering){
+                maxLine = 100;
+                // EasyLoading.showSuccess("maxLine: $maxLine");
+              }else{
+                var split = text!.split("\n");
+                text = split.length > maxLine ? "${split.sublist(0, maxLine).join("\n")}..." : text;
+              }
+              return Text(
+                // 文字
+                text!,
+                maxLines: maxLine,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              );
+            }),
           ),
           Text(
             index < 9 ? "cmd+${index + 1}" : "",
-            style: TextStyle(color: Theme
-                .of(context)
-                .colorScheme
-                .primary),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ],
       );
@@ -77,17 +90,14 @@ class PasteboardItemView extends StatelessWidget {
         children: [
           Expanded(
               child: Image.memory(
-                item.image!,
-                width: double.infinity,
-                height: 40,
-                fit: BoxFit.cover,
-              )),
+            item.image!,
+            width: double.infinity,
+            height: 40,
+            fit: BoxFit.cover,
+          )),
           Text(
             index < 9 ? "cmd+${index + 1}" : "",
-            style: TextStyle(color: Theme
-                .of(context)
-                .colorScheme
-                .primary),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ],
       );
