@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -112,8 +113,9 @@ class _HomePageState extends State<HomePage>
       ),
       keyDownHandler: (hotKey) async {
         var items = clipboardVM.pasteboardItemsWithSearchKey
-            .where((p0) => p0.selected.value);
-        await PasteUtils.doAsyncPasteMerge(items.toList());
+            .where((p0) => p0.selected.value)
+            .toList();
+        await PasteUtils.doAsyncPasteMerge(items.reversed.toList());
         EasyLoading.showSuccess("copy success");
       },
     );
@@ -182,7 +184,7 @@ class _HomePageState extends State<HomePage>
         }
         return;
       }
-      if(clipboardVM.searchKey.isNotEmpty){
+      if (clipboardVM.searchKey.isNotEmpty) {
         clipboardVM.searchKey.value = "";
         return;
       }
@@ -286,9 +288,9 @@ class _HomePageState extends State<HomePage>
         var lastFsn = focusNodeMap[curFocusIdx];
         switch (intent.key) {
           case "up":
-            curFocusIdx--;
+            curFocusIdx = max(curFocusIdx - 1, 0);
           case "down":
-            curFocusIdx++;
+            curFocusIdx = min(curFocusIdx + 1, focusNodeMap.length - 1);
         }
         var fsn = focusNodeMap[curFocusIdx];
         if (fsn == null) {
@@ -296,6 +298,19 @@ class _HomePageState extends State<HomePage>
         } else {
           fsn.requestFocus();
         }
+
+        // todo 跑快点的时候 会有问题, 滚动不准
+        var curOffset = _scrollController.offset;
+        EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset");
+        var fsnOffset = fsn?.rect.top ?? 0;
+        // if (curOffset < fsnOffset) {
+        //   // _scrollController.offset
+        // }
+        var diff = fsnOffset - (lastFsn?.rect.top ?? 0);
+        ;
+        var targetOffset = curFocusIdx == 0 ? 0.0 : curOffset + diff;
+        _scrollController.animateTo(targetOffset,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       },
       metaIntentSet: {
         LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
