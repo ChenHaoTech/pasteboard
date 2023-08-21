@@ -62,7 +62,7 @@ class PasteboardItemView extends StatelessWidget {
           Expanded(
             child: Obx(() {
               var isHovering= hover.value;
-              if(isHovering){
+              if(isHovering && false){
                 maxLine = 100;
                 // EasyLoading.showSuccess("maxLine: $maxLine");
               }else{

@@ -68,18 +68,6 @@ class _HomePageState extends State<HomePage>
   void bindHotKey() async {
     await hotKeyManager.unregisterAll();
     bind1_9();
-    //cmd + f 聚焦搜索栏
-    hotKeyManager.register(
-      HotKey(
-        KeyCode.keyF,
-        modifiers: [KeyModifier.meta],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-      ),
-      keyDownHandler: (hotKey) async {
-        _searchFsn.requestFocus();
-      },
-    );
 
     // todo only 测试环境
     hotKeyManager.register(
@@ -94,63 +82,33 @@ class _HomePageState extends State<HomePage>
       },
     );
     hotKeyManager.register(
-      HotKey(
-        KeyCode.keyP,
-        modifiers: [KeyModifier.meta, KeyModifier.alt],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-      ),
-      keyDownHandler: (hotKey) async {
-        togglePin();
-      },
-    );
-    hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
-        windowManager.show();
-        Offset position = await computePosition();
-        // screenRetriever.getAllDisplays().then((value) {
-        //   for (var element in value) {
-        //     print('id: ${element.id}');
-        //     print('dx: ${element.visiblePosition!.dx}');
-        //     print('dy: ${element.visiblePosition!.dy}');
-        //     print('width: ${element.size.width}');
-        //     print('height: ${element.size.height}');
-        //   }
-        // });
-        if (!await windowManager.isVisible()) {
-          windowManager.setPosition(position, animate: false);
-        }
-        focusNodeMap[curFocusIdx]?.unfocus();
-        curFocusIdx = -1;
-        windowManager.focus();
-        _scrollController.animateTo(0,
-            duration: const Duration(milliseconds: 0), curve: Curves.easeOut);
-        _searchFsn.requestFocus();
-        windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
+        await _requestWindowShow();
       },
-      // Only works on macOS.
-      keyUpHandler: (hotKey) {},
     );
-    hotKeyManager.register(_escKey, keyDownHandler: (hotKey) {
-      var selectedItems = PasteboardItem.selectedItems;
-      if (selectedItems.isNotEmpty) {
-        //todo 还有 bug
-        for (var value in selectedItems) {
-          value.selected.value = false;
-        }
-        return;
-      }
-      if (clipboardVM.searchKey.isNotEmpty) {
-        clipboardVM.searchKey.value = "";
-        return;
-      }
-      if (clipboardVM.alwaysOnTop.value) {
-        windowManager.blur();
-      } else {
-        hideWindow();
-      }
-    });
+  }
+
+  Future<void> _requestWindowShow() async {
+    windowManager.show();
+    Offset position = await computePosition();
+    // screenRetriever.getAllDisplays().then((value) {
+    //   for (var element in value) {
+    //     print('id: ${element.id}');
+    //     print('dx: ${element.visiblePosition!.dx}');
+    //     print('dy: ${element.visiblePosition!.dy}');
+    //     print('width: ${element.size.width}');
+    //     print('height: ${element.size.height}');
+    //   }
+    // });
+    if (!await windowManager.isVisible()) {
+      windowManager.setPosition(position, animate: false);
+    }
+    windowManager.focus();
+    _scrollController.animateTo(0,
+        duration: const Duration(milliseconds: 0), curve: Curves.easeOut);
+    _searchFsn.requestFocus();
+    windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
   }
 
   Future<void> bind1_9() async {
@@ -231,6 +189,8 @@ class _HomePageState extends State<HomePage>
     clipboardWatcher.stop();
   }
 
+  final FocusNode _KeyBoardWidgetFsn = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     Widget child = CustomScrollView(
@@ -241,17 +201,37 @@ class _HomePageState extends State<HomePage>
       ],
     );
     child = KeyboardBindingWidget<CustomIntent>(
+      focusNode: _KeyBoardWidgetFsn,
       metaIntentSet: {
         LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
-        LogicalKeySet(LogicalKeyboardKey.equal,LogicalKeyboardKey.meta): const CustomIntent("meta_="),
-        LogicalKeySet(LogicalKeyboardKey.minus,LogicalKeyboardKey.meta): const CustomIntent("meta_-"),
-        LogicalKeySet(KeyCode.keyC.logicalKey,LogicalKeyboardKey.meta): const CustomIntent("copy"),
+        LogicalKeySet(LogicalKeyboardKey.equal, LogicalKeyboardKey.meta):
+            const CustomIntent("meta_="),
+        LogicalKeySet(LogicalKeyboardKey.minus, LogicalKeyboardKey.meta):
+            const CustomIntent("meta_-"),
+        LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
+            const CustomIntent("copy"),
+        LogicalKeySet(KeyCode.comma.logicalKey, LogicalKeyboardKey.meta):
+            const CustomIntent("meta_,"),
+        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
+            const CustomIntent("meta_f"),
+        LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
+        const CustomIntent("meta_p"),
+        LogicalKeySet(KeyCode.escape.logicalKey): const CustomIntent("esc"),
       },
-      onMetaAction: (CustomIntent intent, BuildContext context) async{
+      onMetaAction: (CustomIntent intent, BuildContext context) async {
         var lastFsn = focusNodeMap[curFocusIdx];
         var step = 20;
         switch (intent.key) {
+          case "meta_p":
+            togglePin();
+            return;
+          case "meta_,":
+            EasyLoading.showInfo("🚧") ;
+            return;
+          case "meta_f":
+            _searchFsn.requestFocus();
+            return;
           case "up":
             curFocusIdx = max(curFocusIdx - 1, 0);
             break;
@@ -261,19 +241,43 @@ class _HomePageState extends State<HomePage>
           case "meta_=":
             var size = await windowManager.getSize();
             size = Size(size.width + step, size.height + step);
-            windowManager.setSize(size,animate: true);
+            windowManager.setSize(size, animate: true);
             return;
           case "meta_-":
             var size = await windowManager.getSize();
             size = Size(size.width - step, size.height - step);
-            windowManager.setSize(size,animate: true);
+            windowManager.setSize(size, animate: true);
+            return;
+          case "esc":
+            var selectedItems = PasteboardItem.selectedItems;
+            if (selectedItems.isNotEmpty) {
+              //todo 还有 bug
+              for (var value in selectedItems) {
+                value.selected.value = false;
+              }
+              EasyLoading.showSuccess("clear all selected");
+              return;
+            }
+            if (clipboardVM.searchKey.isNotEmpty) {
+              clipboardVM.searchKey.value = "";
+              EasyLoading.showSuccess("clear search key");
+              return;
+            }
+            if (clipboardVM.alwaysOnTop.value) {
+              windowManager.blur();
+            } else {
+              hideWindow();
+            }
             return;
           case "copy":
             var items = clipboardVM.pasteboardItemsWithSearchKey
                 .where((p0) => p0.selected.value)
                 .toList();
             var list = items.reversed.toList();
-            if(await PasteUtils.doAsyncPasteMerge(list)){
+            if (list.isEmpty) {
+              list = [clipboardVM.pasteboardItemsWithSearchKey[curFocusIdx]];
+            }
+            if (await PasteUtils.doAsyncPasteMerge(list)) {
               EasyLoading.showSuccess("copy success,count:${list.length}");
             }
             return;
@@ -290,10 +294,11 @@ class _HomePageState extends State<HomePage>
 
         // todo 跑快点的时候 会有问题, 滚动不准
         var curOffset = _scrollController.offset;
-        // EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset");
         var fsnOffset = fsn?.rect.top ?? 0;
-        // if (curOffset < fsnOffset) {
-        //   // _scrollController.offset
+        var height = _KeyBoardWidgetFsn.size.height;
+        // EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset, height: $height");
+        // if (curOffset + height >= (fsnOffset + 100) && curOffset >= fsnOffset) {
+        //   return;
         // }
         var diff = fsnOffset - (lastFsn?.rect.top ?? 0);
         var targetOffset = curFocusIdx == 0 ? 0.0 : curOffset + diff;
@@ -379,7 +384,7 @@ class _HomePageState extends State<HomePage>
                   clipboardVM.searchKey.value = value;
                   focusNodeMap[curFocusIdx]?.unfocus();
                   focusNodeMap.clear();
-                  curFocusIdx = -1;
+                  curFocusIdx = 0;
                 },
               ),
             ),
@@ -484,7 +489,13 @@ class _HomePageState extends State<HomePage>
     if (!clipboardVM.alwaysOnTop.value) {
       //hide window when blur
       hideWindow();
+    } else {
+      windowManager.blur();
     }
+    focusNodeMap.forEach((key, value) {
+      value.unfocus();
+    });
+    curFocusIdx = 0;
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
     await Future.delayed(100.milliseconds);
