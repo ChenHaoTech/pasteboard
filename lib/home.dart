@@ -60,6 +60,29 @@ class _HomePageState extends State<HomePage>
   void bindHotKey() async {
     await hotKeyManager.unregisterAll();
     bind1_9();
+    // todo only 测试环境
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.keyR,
+        modifiers: [KeyModifier.meta, KeyModifier.alt],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        bindHotKey();
+      },
+    );
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.keyP,
+        modifiers: [KeyModifier.meta, KeyModifier.alt],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        togglePin();
+      },
+    );
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
@@ -181,7 +204,7 @@ class _HomePageState extends State<HomePage>
   SliverToBoxAdapter buildPasteboardHis() {
     return SliverToBoxAdapter(
       child: Obx(
-            () {
+        () {
           var data = clipboardVM.pasteboardItemsWithSearchKey;
           return ListView.builder(
               shrinkWrap: true,
@@ -195,8 +218,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget buildPasteboardItemView(int index,
-      RxList<PasteboardItem> data) {
+  Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
     return Obx(() {
       var selected = item.selected;
@@ -204,7 +226,9 @@ class _HomePageState extends State<HomePage>
         index: index,
         item: item,
         // 选中了就深紫色 ,没有选中就正常色
-        color: selected.value ?  Colors.deepPurple.shade300: Colors.deepPurple.shade50,
+        color: selected.value
+            ? Colors.deepPurple.shade300
+            : Colors.deepPurple.shade50,
         onTap: () async {
           if (isMetaPressed) {
             item.selected.value = !(selected.value);
@@ -254,11 +278,15 @@ class _HomePageState extends State<HomePage>
 
   ElevatedButton buildPinWindowBtn() {
     return ElevatedButton(onPressed: () async {
-      await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
-      alwaysOnTop.value = !alwaysOnTop.value;
+      await togglePin();
     }, child: Obx(() {
       return Text((alwaysOnTop.value) ? 'Unpin' : 'Pin');
     }));
+  }
+
+  Future<void> togglePin() async {
+    await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
+    alwaysOnTop.value = !alwaysOnTop.value;
   }
 
   ElevatedButton buildCreateWindowBtn() {
@@ -285,7 +313,7 @@ class _HomePageState extends State<HomePage>
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
     ClipboardData? newClipboardData =
-    await Clipboard.getData(Clipboard.kTextPlain);
+        await Clipboard.getData(Clipboard.kTextPlain);
     if (newClipboardData?.text != null &&
         newClipboardData!.text!.trim().isNotEmpty) {
       String text = newClipboardData.text!.trim();
@@ -308,9 +336,7 @@ class _HomePageState extends State<HomePage>
         break;
       }
     }
-    targetItem!.createTime = DateTime
-        .now()
-        .millisecondsSinceEpoch;
+    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
     if (targetItem.type == 1 && targetItem.path == null) {
       targetItem = await saveImageToLocal(targetItem);
     }
