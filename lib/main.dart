@@ -1,15 +1,12 @@
-import 'dart:io';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_pasteboard/ClipboardVM.dart';
-import 'package:get/get.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/utils/logger.dart';
+import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'ClipboardVM.dart';
 import 'home.dart';
-import 'vm_view/pasteboard_item_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,8 +29,8 @@ void main() async {
   });
   // windowManager.hide();
   windowManager.show();
-  windowManager.setMovable(false);
-  windowManager.setResizable(false);
+  windowManager.setMovable(true);
+  windowManager.setResizable(true);
   logger.i("windowManager.show()");
   Get.put(ClipboardVM());
   runApp(const MyApp());

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:clipboard_watcher/clipboard_watcher.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -222,9 +224,29 @@ class _HomePageState extends State<HomePage>
                 },
               ),
             ),
+            buildCreateWindow(),
           ],
         ),
       ),
+    );
+  }
+  ElevatedButton buildCreateWindow() {
+    return ElevatedButton(
+      onPressed: () async {
+        final window = await DesktopMultiWindow.createWindow(jsonEncode({
+          'args1': 'Sub window',
+          'args2': 100,
+          'args3': true,
+          'business': 'business_test',
+        }));
+        window
+          ..setFrame(const Offset(0, 0) & const Size(1280, 720))
+          ..center()
+          ..setTitle('Another window')
+          ..resizable(false)
+          ..show();
+      },
+      child: const Text('Create a new World!'),
     );
   }
 

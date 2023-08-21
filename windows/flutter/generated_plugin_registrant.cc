@@ -7,6 +7,7 @@
 #include "generated_plugin_registrant.h"
 
 #include <clipboard_watcher/clipboard_watcher_plugin.h>
+#include <desktop_lifecycle/desktop_lifecycle_plugin.h>
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <hotkey_manager/hotkey_manager_plugin.h>
 #include <keypress_simulator/keypress_simulator_plugin.h>
@@ -17,6 +18,8 @@
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   ClipboardWatcherPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ClipboardWatcherPlugin"));
+  DesktopLifecyclePluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("DesktopLifecyclePlugin"));
   DesktopMultiWindowPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("DesktopMultiWindowPlugin"));
   HotkeyManagerPluginRegisterWithRegistrar(
