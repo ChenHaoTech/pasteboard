@@ -43,6 +43,7 @@ void main(List<String> args) async {
   // windowManager.show();
   windowManager.setMovable(true);
   windowManager.setResizable(true);
+  windowManager.setVisibleOnAllWorkspaces(false);
   Get.put(ClipboardVM());
   runApp(const MyApp());
   configLoading();

@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
@@ -92,15 +90,27 @@ class _HomePageState extends State<HomePage>
             .where((p0) => p0.selected.value)
             .toList();
         var list = items.reversed.toList();
-        if (list.isEmpty) {
-          list = clipboardVM.pasteboardItemsWithSearchKey
-              .getRange(curFocusIdx, curFocusIdx + 1)
-              .toList();
-        }
+        // if (list.isEmpty) {
+        //   list = clipboardVM.pasteboardItemsWithSearchKey
+        //       .getRange(curFocusIdx, curFocusIdx + 1)
+        //       .toList();
+        // }
         if (await PasteUtils.doAsyncPasteMerge(list)) {
           EasyLoading.showSuccess("copy success,count:${list.length}");
         }
         return;
+      },
+    );
+    // command + w 关闭窗口
+    hotKeyManager.register(
+      HotKey(
+        KeyCode.keyW,
+        modifiers: [KeyModifier.meta],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+      ),
+      keyDownHandler: (hotKey) async {
+        tryHideWindow(mustHide: true);
       },
     );
     hotKeyManager.register(
@@ -168,7 +178,7 @@ class _HomePageState extends State<HomePage>
             event.isMetaPressed) {
           var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
           if (pasteboardItems.length > i) {
-            await hideWindow();
+            await tryHideWindow();
             await PasteUtils.doAsyncPaste(pasteboardItems[i]);
             return true;
           }
@@ -289,7 +299,7 @@ class _HomePageState extends State<HomePage>
             if (clipboardVM.alwaysOnTop.value) {
               windowManager.blur();
             } else {
-              hideWindow();
+              tryHideWindow();
             }
             return;
           default:
@@ -323,7 +333,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  var curFocusIdx = -1;
 
   Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
@@ -341,7 +350,7 @@ class _HomePageState extends State<HomePage>
             item.selected.value = !(selected.value);
           } else {
             // 没有 cmd 直接粘贴
-            await hideWindow();
+            await tryHideWindow();
             PasteUtils.doAsyncPaste(item);
           }
         },
@@ -371,7 +380,7 @@ class _HomePageState extends State<HomePage>
                 onChanged: (value) {
                   //todo 做个 debounce?
                   clipboardVM.searchKey.value = value;
-                  curFocusIdx = 0;
+                  // curFocusIdx = 0;
                 },
               ),
             ),
@@ -482,22 +491,21 @@ class _HomePageState extends State<HomePage>
 
   @override
   void onWindowBlur() async {
-    if (!clipboardVM.alwaysOnTop.value) {
-      //hide window when blur
-      hideWindow();
-    } else {
-      windowManager.blur();
-    }
-    curFocusIdx = 0;
+    tryHideWindow();
+    // curFocusIdx = 0;
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
-    await Future.delayed(100.milliseconds);
-    //todo 只清理 合适的 可能得写 window、mac 插件
-    // ignore: invalid_use_of_visible_for_testing_member
-    RawKeyboard.instance.clearKeysPressed();
   }
 
-  Future<void> hideWindow() async {
+  Future<void> tryHideWindow({bool mustHide = false}) async {
+    if(!mustHide && clipboardVM.alwaysOnTop.value){
+      await windowManager.blur();
+      // await Future.delayed(100.milliseconds);
+      //todo 只清理 合适的 可能得写 window、mac 插件
+      // ignore: invalid_use_of_visible_for_testing_member
+      RawKeyboard.instance.clearKeysPressed();
+      return;
+    }
     return await windowManager.hide();
   }
 
