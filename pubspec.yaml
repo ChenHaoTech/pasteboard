@@ -52,6 +52,7 @@ dependencies:
     path: package/desktop_multi_window
   desktop_lifecycle:
     path: package/desktop_lifecycle
+  rich_clipboard: ^1.0.1
 
 dev_dependencies:
   flutter_test:

@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
   hotkey_manager
   pasteboard
+  rich_clipboard_linux
   screen_retriever
   window_manager
 )

@@ -215,6 +215,10 @@ class WindowManager {
     await _channel.invokeMethod('hide');
   }
 
+  Future<void> invokeMethod(String method) async {
+    _channel.invokeMethod(method);
+  }
+
   /// Returns `bool` - Whether the window is visible to the user.
   Future<bool> isVisible() async {
     return await _channel.invokeMethod('isVisible');
