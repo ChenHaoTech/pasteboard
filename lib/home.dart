@@ -50,6 +50,12 @@ class _HomePageState extends State<HomePage>
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
+  final HotKey _copy = HotKey(
+    KeyCode.keyC,
+    modifiers: [KeyModifier.meta],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
+  );
 
   @override
   void initState() {
@@ -76,6 +82,24 @@ class _HomePageState extends State<HomePage>
       ),
       keyDownHandler: (hotKey) async {
         bindHotKey();
+      },
+    );
+    // command + c
+    hotKeyManager.register(
+      _copy,
+      keyDownHandler: (hotKey) async {
+        var items = clipboardVM.pasteboardItemsWithSearchKey
+            .where((p0) => p0.selected.value)
+            .toList();
+        var list = items.reversed.toList();
+        if (list.isEmpty) {
+          list = clipboardVM.pasteboardItemsWithSearchKey
+              .getRange(curFocusIdx, curFocusIdx + 1).toList();
+        }
+        if (await PasteUtils.doAsyncPasteMerge(list)) {
+          EasyLoading.showSuccess("copy success,count:${list.length}");
+        }
+        return;
       },
     );
     hotKeyManager.register(
@@ -184,6 +208,7 @@ class _HomePageState extends State<HomePage>
     super.dispose();
     clipboardWatcher.removeListener(this);
     clipboardWatcher.stop();
+    hotKeyManager.unregister(_copy);
   }
 
   final FocusNode _KeyBoardWidgetFsn = FocusNode();
@@ -206,8 +231,6 @@ class _HomePageState extends State<HomePage>
             const CustomIntent("meta_="),
         LogicalKeySet(LogicalKeyboardKey.minus, LogicalKeyboardKey.meta):
             const CustomIntent("meta_-"),
-        LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
-            const CustomIntent("copy"),
         LogicalKeySet(KeyCode.comma.logicalKey, LogicalKeyboardKey.meta):
             const CustomIntent("meta_,"),
         LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
@@ -264,18 +287,6 @@ class _HomePageState extends State<HomePage>
               windowManager.blur();
             } else {
               hideWindow();
-            }
-            return;
-          case "copy":
-            var items = clipboardVM.pasteboardItemsWithSearchKey
-                .where((p0) => p0.selected.value)
-                .toList();
-            var list = items.reversed.toList();
-            if (list.isEmpty) {
-              list = [clipboardVM.pasteboardItemsWithSearchKey[curFocusIdx]];
-            }
-            if (await PasteUtils.doAsyncPasteMerge(list)) {
-              EasyLoading.showSuccess("copy success,count:${list.length}");
             }
             return;
           default:
@@ -350,8 +361,8 @@ class _HomePageState extends State<HomePage>
             item.selected.value = !(selected.value);
           } else {
             // 没有 cmd 直接粘贴
-            await PasteUtils.doAsyncPaste(item);
-            hideWindow();
+            await hideWindow();
+            PasteUtils.doAsyncPaste(item);
           }
         },
       );
