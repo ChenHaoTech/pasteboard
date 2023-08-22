@@ -502,6 +502,11 @@ class _HomePageState extends State<HomePage>
       await windowManager.blur();
       // await Future.delayed(100.milliseconds);
       //todo 只清理 合适的 可能得写 window、mac 插件
+      // /Users/apple/Work/dev/flutter/packages/flutter/lib/src/services/system_channels.dart:284
+      // static const BasicMessageChannel<Object?> keyEvent = BasicMessageChannel<Object?>(
+      //       'flutter/keyevent',
+      //       JSONMessageCodec(),
+      //   );
       // ignore: invalid_use_of_visible_for_testing_member
       RawKeyboard.instance.clearKeysPressed();
       return;
