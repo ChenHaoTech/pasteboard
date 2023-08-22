@@ -285,19 +285,20 @@ class _HomePageState extends State<HomePage>
             var selectedItems = PasteboardItem.selectedItems;
             if (selectedItems.isNotEmpty) {
               Get.defaultDialog(
-                  content: const Text("clear all selected?"),
-                  confirm: TextButton(
-                    autofocus: true,
-                    onPressed: () {
-                      Get.back(result: true);
-                      for (var value in selectedItems.toList()) {
-                        value.selected.value = false;
-                      }
-                      // 关闭弹窗
-                      EasyLoading.showSuccess("clear all selected");
-                    },
-                    child: const Text("confirm"),
-                  ),);
+                content: const Text("clear all selected?"),
+                confirm: TextButton(
+                  autofocus: true,
+                  onPressed: () {
+                    Get.back(result: true);
+                    for (var value in selectedItems.toList()) {
+                      value.selected.value = false;
+                    }
+                    // 关闭弹窗
+                    EasyLoading.showSuccess("clear all selected");
+                  },
+                  child: const Text("confirm"),
+                ),
+              );
               return;
             }
             if (clipboardVM.searchKey.isNotEmpty) {
@@ -318,33 +319,48 @@ class _HomePageState extends State<HomePage>
       },
       child: _buildSecondPanel(child),
     );
+    var bottonSheet = Obx((){
+      if(clipboardVM.alwaysOnTop.value )
+        return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton(
+            onPressed: null,
+            child: Text("markdown type"),
+          )
+        ],
+      );
+      return const SizedBox(height: 0,);
+    });
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: child,
+      bottomSheet: bottonSheet,
     );
   }
 
   Widget _buildSecondPanel(Widget child) {
-    return Obx((){
-      if(PasteboardItem.selectedItems.isEmpty){
+    return Obx(() {
+      if (PasteboardItem.selectedItems.isEmpty) {
         return child;
       }
-      var res= PasteboardItem.selectedItems.map((it) => it.text).join("\n");
-      var textField= TextField(
+      var res = PasteboardItem.selectedItems.map((it) => it.text).join("\n");
+      var textField = TextField(
         readOnly: true,
         controller: TextEditingController(text: res),
-        decoration: const InputDecoration(border: InputBorder. none),
+        decoration: const InputDecoration(border: InputBorder.none),
         maxLines: null,
         style: const TextStyle(fontSize: 14),
-        onChanged: (value) {
-
-        },
+        onChanged: (value) {},
       );
       // coloun
       return Row(
         children: [
-          Flexible(flex:1 ,child: child,),
+          Flexible(
+            flex: 1,
+            child: child,
+          ),
           Flexible(
             flex: 1,
             child: textField,
