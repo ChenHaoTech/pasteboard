@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage>
     }
     windowManager.focus();
     _scrollController.animateTo(0,
-        duration: const Duration(milliseconds: 0), curve: Curves.easeOut);
+        duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
     _searchFsn.requestFocus();
     windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
   }
@@ -284,11 +284,20 @@ class _HomePageState extends State<HomePage>
           case "esc":
             var selectedItems = PasteboardItem.selectedItems;
             if (selectedItems.isNotEmpty) {
-              //todo 还有 bug
-              for (var value in selectedItems.toList()) {
-                value.selected.value = false;
-              }
-              EasyLoading.showSuccess("clear all selected");
+              Get.defaultDialog(
+                  content: const Text("clear all selected?"),
+                  confirm: TextButton(
+                    autofocus: true,
+                    onPressed: () {
+                      Get.back(result: true);
+                      for (var value in selectedItems.toList()) {
+                        value.selected.value = false;
+                      }
+                      // 关闭弹窗
+                      EasyLoading.showSuccess("clear all selected");
+                    },
+                    child: const Text("confirm"),
+                  ),);
               return;
             }
             if (clipboardVM.searchKey.isNotEmpty) {
@@ -307,13 +316,42 @@ class _HomePageState extends State<HomePage>
             return;
         }
       },
-      child: child,
+      child: _buildSecondPanel(child),
     );
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: child,
     );
+  }
+
+  Widget _buildSecondPanel(Widget child) {
+    return Obx((){
+      if(PasteboardItem.selectedItems.isEmpty){
+        return child;
+      }
+      var res= PasteboardItem.selectedItems.map((it) => it.text).join("\n");
+      var textField= TextField(
+        readOnly: true,
+        controller: TextEditingController(text: res),
+        decoration: const InputDecoration(border: InputBorder. none),
+        maxLines: null,
+        style: const TextStyle(fontSize: 14),
+        onChanged: (value) {
+
+        },
+      );
+      // coloun
+      return Row(
+        children: [
+          Flexible(flex:1 ,child: child,),
+          Flexible(
+            flex: 1,
+            child: textField,
+          ),
+        ],
+      );
+    });
   }
 
   SliverToBoxAdapter buildPasteboardHis() {
@@ -332,7 +370,6 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
 
   Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
@@ -498,7 +535,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> tryHideWindow({bool mustHide = false}) async {
-    if(!mustHide && clipboardVM.alwaysOnTop.value){
+    if (!mustHide && clipboardVM.alwaysOnTop.value) {
       await windowManager.blur();
       // await Future.delayed(100.milliseconds);
       //todo 只清理 合适的 可能得写 window、mac 插件
@@ -540,7 +577,7 @@ class PasteUtils {
     }
     var resStr = "";
     for (var item in items) {
-      if (item.type == 0) {
+      if (item.type == PasteboardItemType.text) {
         // todo 支持更多样的文本格式
         resStr += "\n${item.text!}";
       } else if (item.type == 1) {
