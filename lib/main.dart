@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_pasteboard/markdown_page.dart';
 import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -79,6 +80,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const HomePage(title: 'Flutter Demo Home Page'),
+      getPages: [
+        GetPage(
+          name: '/home',
+          page: () => const Text("welcome"),
+        ),
+        GetPage(
+          name: '/markdown',
+          page: () => MarkdownPage(),
+        ),
+      ],
       builder: EasyLoading.init(),
     );
   }

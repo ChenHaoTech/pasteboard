@@ -1,20 +1,16 @@
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
-import 'package:flutter_pasteboard/database_helper.dart';
-import 'package:flutter_pasteboard/utils/logger.dart';
-import 'package:flutter_pasteboard/utils/sha256_util.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -31,9 +27,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with ClipboardListener, WindowListener {
-  ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
+class _HomePageState extends State<HomePage>with  WindowListener {
   late ScrollController _scrollController;
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
 
@@ -59,9 +53,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    clipboardWatcher.addListener(this);
-    clipboardWatcher.start();
-
     bindHotKey();
     windowManager.addListener(this);
   }
@@ -218,13 +209,12 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     super.dispose();
-    clipboardWatcher.removeListener(this);
     clipboardWatcher.stop();
     hotKeyManager.unregister(_copy);
     hotKeyManager.onRawKeyEvent = null;
   }
 
-  final FocusNode _KeyBoardWidgetFsn = FocusNode();
+  final FocusNode _keyBoardWidgetFsn = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +226,7 @@ class _HomePageState extends State<HomePage>
       ],
     );
     child = KeyboardBindingWidget<CustomIntent>(
-      focusNode: _KeyBoardWidgetFsn,
+      focusNode: _keyBoardWidgetFsn,
       metaIntentSet: {
         LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
         LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
@@ -320,16 +310,20 @@ class _HomePageState extends State<HomePage>
       child: _buildSecondPanel(child),
     );
     var bottonSheet = Obx((){
-      if(clipboardVM.alwaysOnTop.value )
-        return const Row(
+      if(clipboardVM.alwaysOnTop.value ) {
+        return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TextButton(
-            onPressed: null,
-            child: Text("markdown type"),
+            onPressed: (){
+              clipboardVM.markdownType.value = true;
+              Get.toNamed("markdown");
+            },
+            child: const Text("markdown type"),
           )
         ],
       );
+      }
       return const SizedBox(height: 0,);
     });
     return Scaffold(
@@ -479,70 +473,6 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  void onClipboardChanged() async {
-    PasteboardItem? targetItem;
-    RichClipboardData rData = await RichClipboard.getData();
-    // ClipboardData? newClipboardData =
-    //     await Clipboard.getData(Clipboard.kTextPlain);
-    if (rData.text != null && rData.text!.trim().isNotEmpty) {
-      //这里可以做 一些插件
-      String text = rData.text!.trim();
-      String sha256 = SHA256Util.calculateSHA256ForText(text);
-      targetItem = PasteboardItem(PasteboardItemType.text,
-          text: text, sha256: sha256); // 文字
-    } else if (rData.html != null && rData.html!.trim().isNotEmpty) {
-      String html = rData.html!.trim();
-      String sha256 = SHA256Util.calculateSHA256ForText(html);
-      targetItem = PasteboardItem(PasteboardItemType.html,
-          html: html, sha256: sha256); // html
-    }
-    final image = await Pasteboard.image;
-    if (image != null) {
-      String sha256 = SHA256Util.calculateSHA256(image);
-      targetItem = PasteboardItem(PasteboardItemType.image,
-          image: image, sha256: sha256); //图片
-    }
-    // 如果 都没有, 就获取剪切板失败
-    if (targetItem == null) {
-      return;
-    }
-    for (int i = 0; i < clipboardVM.pasteboardItems.length; i++) {
-      PasteboardItem item = clipboardVM.pasteboardItems[i];
-      if (item.sha256 == targetItem!.sha256) {
-        targetItem = item;
-        clipboardVM.pasteboardItems.removeAt(i);
-        break;
-      }
-    }
-    targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
-    if (targetItem.type == 1 && targetItem.path == null) {
-      targetItem = await saveImageToLocal(targetItem);
-    }
-    if (targetItem.id != null) {
-      DatabaseHelper.instance.update(targetItem);
-    } else {
-      try {
-        targetItem = await DatabaseHelper.instance.insert(targetItem);
-      } catch (e) {
-        logger.e(e);
-        return;
-      }
-    }
-    clipboardVM.pasteboardItems.insert(0, targetItem);
-  }
-
-  Future<PasteboardItem> saveImageToLocal(PasteboardItem item) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    final fileName = "${item.sha256}.png";
-    final file = File('$path/$fileName');
-    await file.writeAsBytes(item.image!);
-    item.path = file.path;
-    logger.i("save image to local success");
-    return item;
-  }
-
-  @override
   void onWindowBlur() async {
     tryHideWindow();
     // curFocusIdx = 0;
@@ -596,7 +526,7 @@ class PasteUtils {
       if (item.type == PasteboardItemType.text) {
         // todo 支持更多样的文本格式
         resStr += "\n${item.text!}";
-      } else if (item.type == 1) {
+      } else {
         EasyLoading.showSuccess("type: ${item.type},🚧WIP");
       }
     }
