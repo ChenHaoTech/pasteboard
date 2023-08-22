@@ -10,7 +10,6 @@ class PasteboardItemView extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.color,
-    this.focusNode,
   }) : super(key: key);
 
 // default: item, button
@@ -21,7 +20,6 @@ class PasteboardItemView extends StatelessWidget {
 
   // final ValueChanged<bool>? onHover;
   final VoidCallback? onLongPress;
-  final FocusNode? focusNode;
   var hover = Rx(false);
 
   @override
@@ -34,7 +32,6 @@ class PasteboardItemView extends StatelessWidget {
         // color: getColor(index),
         // color: Colors.deepPurple.shade50,
         child: InkWell(
-          focusNode: focusNode ?? FocusNode(),
           borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),
           onHover: (hovering) {

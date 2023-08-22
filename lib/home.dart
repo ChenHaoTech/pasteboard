@@ -94,7 +94,8 @@ class _HomePageState extends State<HomePage>
         var list = items.reversed.toList();
         if (list.isEmpty) {
           list = clipboardVM.pasteboardItemsWithSearchKey
-              .getRange(curFocusIdx, curFocusIdx + 1).toList();
+              .getRange(curFocusIdx, curFocusIdx + 1)
+              .toList();
         }
         if (await PasteUtils.doAsyncPasteMerge(list)) {
           EasyLoading.showSuccess("copy success,count:${list.length}");
@@ -160,8 +161,9 @@ class _HomePageState extends State<HomePage>
       //   print(
       //     "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
       // }
+      var pressed = RawKeyboard.instance.keysPressed;
       for (int i = 0; i < digitKey.length; i++) {
-        if (RawKeyboard.instance.keysPressed.length == 2 &&
+        if (pressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&
             event.isMetaPressed) {
           var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
@@ -209,6 +211,7 @@ class _HomePageState extends State<HomePage>
     clipboardWatcher.removeListener(this);
     clipboardWatcher.stop();
     hotKeyManager.unregister(_copy);
+    hotKeyManager.onRawKeyEvent = null;
   }
 
   final FocusNode _KeyBoardWidgetFsn = FocusNode();
@@ -240,7 +243,7 @@ class _HomePageState extends State<HomePage>
         LogicalKeySet(KeyCode.escape.logicalKey): const CustomIntent("esc"),
       },
       onMetaAction: (CustomIntent intent, BuildContext context) async {
-        var lastFsn = focusNodeMap[curFocusIdx];
+        var fsn = FocusScope.of(context).focusedChild;
         var step = 20;
         switch (intent.key) {
           case "meta_p":
@@ -253,10 +256,10 @@ class _HomePageState extends State<HomePage>
             _searchFsn.requestFocus();
             return;
           case "up":
-            curFocusIdx = max(curFocusIdx - 1, 0);
+            fsn?.previousFocus();
             break;
           case "down":
-            curFocusIdx = min(curFocusIdx + 1, focusNodeMap.length - 1);
+            fsn?.nextFocus();
             break;
           case "meta_=":
             var size = await windowManager.getSize();
@@ -272,7 +275,7 @@ class _HomePageState extends State<HomePage>
             var selectedItems = PasteboardItem.selectedItems;
             if (selectedItems.isNotEmpty) {
               //todo 还有 bug
-              for (var value in selectedItems) {
+              for (var value in selectedItems.toList()) {
                 value.selected.value = false;
               }
               EasyLoading.showSuccess("clear all selected");
@@ -293,25 +296,6 @@ class _HomePageState extends State<HomePage>
             EasyLoading.showSuccess("unknow: ${intent.key}");
             return;
         }
-        var fsn = focusNodeMap[curFocusIdx];
-        if (fsn == null) {
-          lastFsn?.unfocus();
-        } else {
-          fsn.requestFocus();
-        }
-
-        // todo 跑快点的时候 会有问题, 滚动不准
-        var curOffset = _scrollController.offset;
-        var fsnOffset = fsn?.rect.top ?? 0;
-        var height = _KeyBoardWidgetFsn.size.height;
-        // EasyLoading.showSuccess("${fsn?.rect.top}, curOffset: $curOffset, height: $height");
-        // if (curOffset + height >= (fsnOffset + 100) && curOffset >= fsnOffset) {
-        //   return;
-        // }
-        var diff = fsnOffset - (lastFsn?.rect.top ?? 0);
-        var targetOffset = curFocusIdx == 0 ? 0.0 : curOffset + diff;
-        _scrollController.animateTo(targetOffset,
-            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       },
       child: child,
     );
@@ -340,16 +324,12 @@ class _HomePageState extends State<HomePage>
   }
 
   var curFocusIdx = -1;
-  var focusNodeMap = <int, FocusNode>{};
 
   Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
-    focusNodeMap.update(index, (value) => FocusNode(),
-        ifAbsent: () => FocusNode());
     return Obx(() {
       var selected = item.selected;
       return PasteboardItemView(
-        focusNode: focusNodeMap[index],
         index: index,
         item: item,
         // 选中了就深紫色 ,没有选中就正常色
@@ -391,8 +371,6 @@ class _HomePageState extends State<HomePage>
                 onChanged: (value) {
                   //todo 做个 debounce?
                   clipboardVM.searchKey.value = value;
-                  focusNodeMap[curFocusIdx]?.unfocus();
-                  focusNodeMap.clear();
                   curFocusIdx = 0;
                 },
               ),
@@ -510,9 +488,6 @@ class _HomePageState extends State<HomePage>
     } else {
       windowManager.blur();
     }
-    focusNodeMap.forEach((key, value) {
-      value.unfocus();
-    });
     curFocusIdx = 0;
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
