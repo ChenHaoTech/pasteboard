@@ -146,6 +146,8 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
 
   final Function(bool, KeyboardBindingWidget)? onFocusChange;
 
+  final KeyEventResult Function(FocusNode node, RawKeyEvent event)? onRawKeyEvent;
+
   KeyboardBindingWidget({
     Key? key,
     required this.child,
@@ -153,6 +155,7 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
     required this.metaIntentSet,
     this.focusNode,
     this.onKeyEvent,
+    this.onRawKeyEvent,
     this.onFocusChange,
   }) : super(key: key);
 
@@ -174,6 +177,7 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
       autofocus: true, // 没有这个 flutter 在 mac 端直接异常了, 起不来
       focusNode: (focusNode ?? FocusNode()).apply((p0) {
         p0.onKeyEvent = this.onKeyEvent;
+        p0.onKey = onRawKeyEvent;
       }),
       shortcuts: metaIntentSet,
       actions: <Type, Action<Intent>>{

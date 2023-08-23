@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     if (list.isEmpty) {
       list = PasteboardItem.current?.map((val) => [val]) ?? [];
     }
-    clearKeyPress();
+    // clearKeyPress();
     PasteUtils.doMultiCopy(list);
     EasyLoading.showSuccess("copy success,count:${list.length}");
     return;
@@ -149,16 +149,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
       );
     }
     hotKeyManager.onRawKeyEvent = (event) async {
-      // if (kDebugMode) {
-      //   print(
-      //     "RawKeyboard.instance.keysPressed: ${RawKeyboard.instance.keysPressed}");
-      // }
       var pressed = RawKeyboard.instance.keysPressed;
+      var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
       for (int i = 0; i < digitKey.length; i++) {
         if (pressed.length == 2 &&
             event.isKeyPressed(digitKey[i].logicalKey) &&
             event.isMetaPressed) {
-          var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
           if (pasteboardItems.length > i) {
             var item = pasteboardItems[i];
             var task = PasteUtils.doCopy(item);
@@ -220,10 +216,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
     );
     child = KeyboardBindingWidget<CustomIntentWithAction>(
       // KeyEventResult Function(FocusNode node, RawKeyEvent event)
-      onKeyEvent: (FocusNode node, KeyEvent event) {
+      onRawKeyEvent: (FocusNode node, RawKeyEvent event) {
         updateStatusBarHint.value++;
-        print(
-            RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(","));
+        if (event.isMetaPressed && event.character != "") {
+          // 很骚的解决方法
+          Future.microtask(() => clearKeyPress());
+        }
         // EasyLoading.showSuccess("status: ${event.runtimeType}, ${event.logicalKey}");
         // if (event is RawKeyDownEvent) {
         //
@@ -241,7 +239,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       onMetaAction:
           (CustomIntentWithAction intent, BuildContext context) async {
         await intent.func(context, intent);
-        clearKeyPress();
+        // clearKeyPress();
       },
       child: Stack(
         children: [
@@ -446,7 +444,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     // curFocusIdx = 0;
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
-    await Future.delayed(30.milliseconds);
+    // await Future.delayed(30.milliseconds);
     //todo 只清理 合适的 可能得写 window、mac 插件
     // /Users/apple/Work/dev/flutter/packages/flutter/lib/src/services/system_channels.dart:284
     // static const BasicMessageChannel<Object?> keyEvent = BasicMessageChannel<Object?>(
@@ -457,11 +455,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   void clearKeyPress() {
-    Future.microtask(() {
-      var keys = RawKeyboard.instance.keysPressed;
-      print("clearKeyPress keys: ${keys}");
-      RawKeyboard.instance.clearKeysPressed();
-    });
+    print("hint clearKeyPress");
+    RawKeyboard.instance.clearKeysPressed();
+    // // ignore: invalid_use_of_visible_for_testing_member
+    // HardwareKeyboard.instance.clearState();
+    // // ignore: invalid_use_of_visible_for_testing_member
+    // ServicesBinding.instance.keyEventManager.clearState();
   }
 
   Future<void> tryHideWindow({bool mustHide = false}) async {
