@@ -353,9 +353,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   final FocusNode _searchFsn = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
 
   SliverToBoxAdapter buildSearchEditor() {
     var textField = TextField(
+      controller: _searchController,
       autofocus: true,
       onTap: () {
         _searchFsn.requestFocus();
@@ -525,6 +527,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   onEscKeyDown() {
+    if (clipboardVM.searchKey.isNotEmpty) {
+      clipboardVM.searchKey.value = "";
+      _searchController.clear();
+      EasyLoading.showSuccess("clear search key");
+      return;
+    }
     var selectedItems = PasteboardItem.selectedItems;
     if (selectedItems.isNotEmpty) {
       if (selectedItems.length == 1) {
@@ -548,11 +556,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
           ),
         );
       }
-      return;
-    }
-    if (clipboardVM.searchKey.isNotEmpty) {
-      clipboardVM.searchKey.value = "";
-      EasyLoading.showSuccess("clear search key");
       return;
     }
     if (clipboardVM.alwaysOnTop.value) {
