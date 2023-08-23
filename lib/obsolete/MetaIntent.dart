@@ -133,17 +133,20 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
   final FocusNode? focusNode;
   final FocusOnKeyCallback? onkey;
 
+  final ValueChanged<bool>? onFocusChange;
+
   const KeyboardBindingWidget({
     Key? key,
     required this.child,
     required this.onMetaAction,
-    required this.metaIntentSet, this.focusNode, this.onkey,
+    required this.metaIntentSet, this.focusNode, this.onkey, this.onFocusChange,
   }) : super(key: key);
 
 
   @override
   Widget build(BuildContext context) {
     return FocusableActionDetector(
+      onFocusChange: onFocusChange,
       autofocus: true,
       focusNode: (focusNode ?? FocusNode()).apply((p0) {p0.onKey = this.onkey;}),
       shortcuts: metaIntentSet,

@@ -33,13 +33,14 @@ class PasteboardItemView extends StatelessWidget {
         // color: getColor(index),
         // color: Colors.deepPurple.shade50,
         child: InkWell(
-          focusNode: FocusNode().apply((p0) {
-            p0.canRequestFocus = false;
-            p0.addListener(() {
+          onFocusChange: (focus){
+            if (focus) {
               PasteboardItem.current = item;
-            });
+            }
+          },
+          focusNode: FocusNode().apply((p0) {
+            // p0.canRequestFocus = false;
           }),
-          borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),
           onHover: (hovering) {
             hover.value = hovering;

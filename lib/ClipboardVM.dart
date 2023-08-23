@@ -12,6 +12,7 @@ import 'package:rich_clipboard/rich_clipboard.dart';
 import 'database_helper.dart';
 
 class ClipboardVM extends GetxController with ClipboardListener {
+  final Rx<PasteboardItem?> lastItem  = Rx<PasteboardItem?>(null);
   final ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
   final pasteboardItems = RxList<PasteboardItem>();
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();

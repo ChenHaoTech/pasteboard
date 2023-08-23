@@ -13,19 +13,12 @@ extension ObjectExtensions<T> on T {
 
   R let<R>(R Function(T it) block) => block(this);
 
-  T also(void Function(T it) block) {
-    block(this);
-    return this;
-  }
-
   T apply(void Function(T it) block) {
     block(this);
     return this;
   }
 
   R run<R>(R Function(T it) block) => block(this);
-
-  R dwith<R>(R Function(T it) block) => block(this);
 
   T? takeIf(bool Function(T it) predicate) {
     if (predicate(this)) {
@@ -44,14 +37,9 @@ extension ObjectExtensions<T> on T {
 
 void main() {
   'Hello'.let((it) => print(it.length));
-
-  'Hello'.also((it) => print(it.length));
-
   'Hello'.apply((it) => print(it.length));
 
   'Hello'.run((it) => print(it.length));
-
-  'Hello'.dwith((it) => print(it.length));
 
   'Hello'.takeIf((it) => it.length > 5);
 
