@@ -12,7 +12,7 @@ import 'package:rich_clipboard/rich_clipboard.dart';
 import 'database_helper.dart';
 
 class ClipboardVM extends GetxController with ClipboardListener {
-  final Rx<PasteboardItem?> lastItem  = Rx<PasteboardItem?>(null);
+  final Rx<PasteboardItem?> lastItem = Rx<PasteboardItem?>(null);
   final ClipboardWatcher clipboardWatcher = ClipboardWatcher.instance;
   final pasteboardItems = RxList<PasteboardItem>();
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
@@ -45,6 +45,7 @@ class ClipboardVM extends GetxController with ClipboardListener {
     return p0.text?.toLowerCase().contains(searchKey.value.toLowerCase()) ??
         false;
   }
+
   @override
   void onClipboardChanged() async {
     PasteboardItem? targetItem;
@@ -68,7 +69,8 @@ class ClipboardVM extends GetxController with ClipboardListener {
       }
     }
     targetItem!.createTime = DateTime.now().millisecondsSinceEpoch;
-    if (targetItem.type == PasteboardItemType.image && targetItem.path == null) {
+    if (targetItem.type == PasteboardItemType.image &&
+        targetItem.path == null) {
       targetItem = await saveImageToLocal(targetItem);
     }
     if (targetItem.id != null) {
@@ -85,8 +87,8 @@ class ClipboardVM extends GetxController with ClipboardListener {
   }
 
   Future<PasteboardItem?> getTxtOrHtml() async {
-     RichClipboardData rData = await RichClipboard.getData();
-     PasteboardItem? targetItem;
+    RichClipboardData rData = await RichClipboard.getData();
+    PasteboardItem? targetItem;
     // ClipboardData? newClipboardData =
     //     await Clipboard.getData(Clipboard.kTextPlain);
     if (rData.text != null && rData.text!.trim().isNotEmpty) {
@@ -102,11 +104,12 @@ class ClipboardVM extends GetxController with ClipboardListener {
           html: html, sha256: sha256); // html
     }
     // bmcheng
-     if (markdownType.value) {
+    if (markdownType.value) {
       editMarkdownContext.value += "\n${targetItem?.text}";
     }
     return targetItem;
   }
+
   Future<PasteboardItem> saveImageToLocal(PasteboardItem item) async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;

@@ -8,13 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
+import 'package:flutter_pasteboard/utils/PasteUtils.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:keypress_simulator/keypress_simulator.dart';
-import 'package:pasteboard/pasteboard.dart';
-import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -164,7 +162,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
           if (pasteboardItems.length > i) {
             await tryHideWindow();
             await PasteUtils.doAsyncPaste(pasteboardItems[i]);
-            return true;
+            return;
           }
         }
       }
@@ -217,9 +215,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
         buildPasteboardHis(),
       ],
     );
-    child = KeyboardBindingWidget<CustomIntent>(
+    child = KeyboardBindingWidget<CustomIntentWithAction>(
       // KeyEventResult Function(FocusNode node, RawKeyEvent event)
-      onkey: (FocusNode node, RawKeyEvent event) {
+      onKeyEvent: (FocusNode node, KeyEvent event) {
         updateStatusBarHint.value++;
         print(
             RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(","));
@@ -230,28 +228,16 @@ class _HomePageState extends State<HomePage> with WindowListener {
         return KeyEventResult.ignored;
       },
       focusNode: _keyBoardWidgetFsn,
-      onFocusChange: (hasFocus) {
+      onFocusChange: (hasFocus, kw) {
         updateStatusBarHint.value++;
+        // if (!hasFocus) {
+        //   kw.enableIntent.value = false;
+        // }
       },
-      metaIntentSet: {
-        LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): const CustomIntent("down"),
-        LogicalKeySet(LogicalKeyboardKey.equal, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_="),
-        LogicalKeySet(LogicalKeyboardKey.minus, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_-"),
-        LogicalKeySet(KeyCode.comma.logicalKey, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_,"),
-        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_f"),
-        LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_p"),
-        LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
-            const CustomIntent("meta_c"),
-        LogicalKeySet(KeyCode.escape.logicalKey): const CustomIntent("esc"),
-      },
-      onMetaAction: (CustomIntent intent, BuildContext context) async {
-        await onIntentAction(intent, context);
+      metaIntentSet: metaIntentSet,
+      onMetaAction:
+          (CustomIntentWithAction intent, BuildContext context) async {
+        await intent.func(context, intent);
         clearKeyPress();
       },
       child: Stack(
@@ -356,7 +342,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
           } else {
             // 没有 cmd 直接粘贴
             await tryHideWindow();
-            PasteUtils.doAsyncPaste(item);
+            await PasteUtils.doAsyncPaste(item);
           }
         },
       );
@@ -366,40 +352,46 @@ class _HomePageState extends State<HomePage> with WindowListener {
   final FocusNode _searchFsn = FocusNode();
 
   SliverToBoxAdapter buildSearchEditor() {
-    return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 16),
-        child: Row(
-          children: [
-            // 输入框, 搜索关键字
-            Expanded(
-              child: TextField(
-                autofocus: true,
-                onTap: () {
-                  _searchFsn.requestFocus();
-                },
-                // onTapOutside: (event) {
-                //   // _keyBoardWidgetFsn.requestFocus();
-                // },
-                focusNode: _searchFsn,
-                decoration: const InputDecoration(
-                  hintText: 'search',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.only(left: 9),
-                ),
-                style: const TextStyle(fontSize: 14),
-                onChanged: (value) {
-                  //todo 做个 debounce?
-                  clipboardVM.searchKey.value = value;
-                  // curFocusIdx = 0;
-                },
-              ),
-            ),
-            // buildCreateWindowBtn(),
-            buildPinWindowBtn(),
-          ],
-        ),
+    var textField = TextField(
+      autofocus: true,
+      onTap: () {
+        _searchFsn.requestFocus();
+      },
+      // onTapOutside: (event) {
+      //   // _keyBoardWidgetFsn.requestFocus();
+      // },
+      focusNode: _searchFsn.apply((it) {
+        it.skipTraversal = true;
+      }),
+      decoration: const InputDecoration(
+        hintText: 'search',
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.only(left: 9),
       ),
+      style: const TextStyle(fontSize: 14),
+      onChanged: (value) {
+        //todo 做个 debounce?
+        clipboardVM.searchKey.value = value;
+        // curFocusIdx = 0;
+      },
+    );
+    var container = Container(
+      padding: const EdgeInsets.only(left: 16, right: 16),
+      child: Row(
+        children: [
+          // 输入框, 搜索关键字
+          Expanded(
+            child: FocusableActionDetector(
+              child: textField,
+            ),
+          ),
+          // buildCreateWindowBtn(),
+          buildPinWindowBtn(),
+        ],
+      ),
+    );
+    return SliverToBoxAdapter(
+      child: container,
     );
   }
 
@@ -456,11 +448,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
     //       'flutter/keyevent',
     //       JSONMessageCodec(),
     //   );
-    clearKeyPress();
+    // clearKeyPress();
   }
 
   void clearKeyPress() {
-    RawKeyboard.instance.clearKeysPressed();
+    var keys = RawKeyboard.instance.keysPressed;
+    print("clearKeyPress keys: ${keys}");
+    // RawKeyboard.instance.clearKeysPressed();
   }
 
   Future<void> tryHideWindow({bool mustHide = false}) async {
@@ -481,127 +475,84 @@ class _HomePageState extends State<HomePage> with WindowListener {
   Widget buildStatusBar() {
     return Obx(() {
       var hint = updateStatusBarHint.value;
+      var keys =
+          RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
         child: Text(
-          RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(","),
+          "${FocusScope.of(context).focusedChild?.context?.widget}, $keys",
         ),
       );
     });
   }
 
-  onIntentAction(CustomIntent intent, BuildContext context) async {
-    var fsn = FocusScope.of(context).focusedChild;
-    var step = 20;
-    switch (intent.key) {
-      case "meta_p":
-        togglePin();
-        return;
-      case "meta_,":
-        EasyLoading.showInfo("🚧");
-        return;
-      case "meta_f":
-        _searchFsn.requestFocus();
-        return;
-      case "up":
+  Map<LogicalKeySet, CustomIntentWithAction> get metaIntentSet {
+    return {
+      LogicalKeySet(LogicalKeyboardKey.arrowUp):
+          CustomIntentWithAction("up", (context, intent) async {
+        var fsn = FocusScope.of(context).focusedChild;
         fsn?.previousFocus();
-        break;
-      case "down":
+      }),
+      LogicalKeySet(LogicalKeyboardKey.arrowDown):
+          CustomIntentWithAction("down", (context, intent) async {
+        var fsn = FocusScope.of(context).focusedChild;
         fsn?.nextFocus();
-        break;
-      case "meta_=":
-        var size = await windowManager.getSize();
-        size = Size(size.width + step, size.height + step);
-        windowManager.setSize(size, animate: true);
-        return;
-      case "meta_-":
-        var size = await windowManager.getSize();
-        size = Size(size.width - step, size.height - step);
-        windowManager.setSize(size, animate: true);
-        return;
-      case "esc":
-        var selectedItems = PasteboardItem.selectedItems;
-        if (selectedItems.isNotEmpty) {
-          if (selectedItems.length == 1) {
-            for (var value in selectedItems.toList()) {
-              value.selected.value = false;
-            }
-          } else {
-            Get.defaultDialog(
-              content: const Text("clear all selected?"),
-              confirm: TextButton(
-                autofocus: true,
-                onPressed: () {
-                  Get.back(result: true);
-                  for (var value in selectedItems.toList()) {
-                    value.selected.value = false;
-                  }
-                  // 关闭弹窗
-                  EasyLoading.showSuccess("clear all selected");
-                },
-                child: const Text("confirm"),
-              ),
-            );
-          }
-          return;
-        }
-        if (clipboardVM.searchKey.isNotEmpty) {
-          clipboardVM.searchKey.value = "";
-          EasyLoading.showSuccess("clear search key");
-          return;
-        }
-        if (clipboardVM.alwaysOnTop.value) {
-          windowManager.blur();
-        } else {
-          tryHideWindow();
-        }
-        return;
-      case "meta_c":
+      }),
+      LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
+          CustomIntentWithAction("meta_f", (context, intent) async {
+        _searchFsn.requestFocus();
+      }),
+      LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
+          CustomIntentWithAction("meta_p", (context, intent) async {
+        togglePin();
+      }),
+      LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
+          CustomIntentWithAction("meta_c", (context, intent) async {
         onCopyKeyDown();
-        fsn?.requestFocus();
-        return;
-      default:
-        EasyLoading.showSuccess("unknow: ${intent.key}");
-        return;
-    }
-  }
-}
-
-class PasteUtils {
-  static Future<void> doAsyncPaste(PasteboardItem item) async {
-    if (item.type == PasteboardItemType.text) {
-      Clipboard.setData(ClipboardData(text: item.text!));
-    } else if (item.type == PasteboardItemType.html) {
-      RichClipboard.setData(RichClipboardData(text: item.html!));
-    } else if (item.type == PasteboardItemType.image) {
-      await Pasteboard.writeFiles([item.path!]);
-    }
-    // ignore: deprecated_member_use
-    return await keyPressSimulator.simulateCtrlVKeyPress();
+      }),
+      LogicalKeySet(KeyCode.escape.logicalKey):
+          CustomIntentWithAction("esc", (context, intent) async {
+        onEscKeyDown();
+      }),
+    };
   }
 
-  static Future<bool> doAsyncPasteMerge(List<PasteboardItem> items) async {
-    if (items.isEmpty) {
-      await EasyLoading.showInfo("No selected content");
-      return false;
-    }
-    doMultiCopy(items);
-    // ignore: deprecated_member_use
-    await keyPressSimulator.simulateCtrlVKeyPress();
-    return true;
-  }
-
-  static doMultiCopy(List<PasteboardItem> items) async {
-    var resStr = "";
-    for (var item in items) {
-      if (item.type == PasteboardItemType.text) {
-        // todo 支持更多样的文本格式
-        resStr += "\n${item.text!}";
+  onEscKeyDown() {
+    var selectedItems = PasteboardItem.selectedItems;
+    if (selectedItems.isNotEmpty) {
+      if (selectedItems.length == 1) {
+        for (var value in selectedItems.toList()) {
+          value.selected.value = false;
+        }
       } else {
-        EasyLoading.showSuccess("type: ${item.type},🚧WIP");
+        Get.defaultDialog(
+          content: const Text("clear all selected?"),
+          confirm: TextButton(
+            autofocus: true,
+            onPressed: () {
+              Get.back(result: true);
+              for (var value in selectedItems.toList()) {
+                value.selected.value = false;
+              }
+              // 关闭弹窗
+              EasyLoading.showSuccess("clear all selected");
+            },
+            child: const Text("confirm"),
+          ),
+        );
       }
+      return;
     }
-    await Clipboard.setData(ClipboardData(text: resStr));
+    if (clipboardVM.searchKey.isNotEmpty) {
+      clipboardVM.searchKey.value = "";
+      EasyLoading.showSuccess("clear search key");
+      return;
+    }
+    if (clipboardVM.alwaysOnTop.value) {
+      windowManager.blur();
+    } else {
+      tryHideWindow();
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
+import 'package:get/get.dart';
 
 /*DEMO
 KeyboardBindingWidget _test_buildKeyboardBindingWidget(
@@ -78,6 +79,7 @@ final meta_9 = LogicalKeySet(
 
 class MetaIntent extends Intent {
   late int digKey;
+
   MetaIntent(this.digKey);
 }
 
@@ -126,29 +128,53 @@ class CustomIntent extends Intent {
   const CustomIntent(this.key, {this.data});
 }
 
+class CustomIntentWithAction extends Intent {
+  final dynamic data;
+  final String key;
+  final Future<void> Function(BuildContext context, CustomIntentWithAction intent) func;
+
+  CustomIntentWithAction(this.key, this.func,{this.data});
+}
+
 class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
   final Map<LogicalKeySet, T> metaIntentSet;
   final Function(T intent, BuildContext context) onMetaAction;
   final Widget child;
   final FocusNode? focusNode;
-  final FocusOnKeyCallback? onkey;
+  final FocusOnKeyEventCallback? onKeyEvent;
+  final enableIntent = RxBool(true);
 
-  final ValueChanged<bool>? onFocusChange;
+  final Function(bool, KeyboardBindingWidget)? onFocusChange;
 
-  const KeyboardBindingWidget({
+  KeyboardBindingWidget({
     Key? key,
     required this.child,
     required this.onMetaAction,
-    required this.metaIntentSet, this.focusNode, this.onkey, this.onFocusChange,
+    required this.metaIntentSet,
+    this.focusNode,
+    this.onKeyEvent,
+    this.onFocusChange,
   }) : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
+    return Obx(() {
+      if (enableIntent.value) {
+        return buildFocusableActionDetector(context);
+      }
+      return child;
+    });
+  }
+
+  FocusableActionDetector buildFocusableActionDetector(BuildContext context) {
     return FocusableActionDetector(
-      onFocusChange: onFocusChange,
-      autofocus: true,
-      focusNode: (focusNode ?? FocusNode()).apply((p0) {p0.onKey = this.onkey;}),
+      onFocusChange: (bool focus) {
+        onFocusChange?.call(focus, this);
+      },
+      autofocus: true, // 没有这个 flutter 在 mac 端直接异常了, 起不来
+      focusNode: (focusNode ?? FocusNode()).apply((p0) {
+        p0.onKeyEvent = this.onKeyEvent;
+      }),
       shortcuts: metaIntentSet,
       actions: <Type, Action<Intent>>{
         T: CallbackAction<T>(
