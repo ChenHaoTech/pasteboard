@@ -478,23 +478,23 @@ class _HomePageState extends State<HomePage>with  WindowListener {
     // curFocusIdx = 0;
     // 100 ms 后清楚键盘, 这个 bug 官方还没解决
     // [\[Web\]\[Windows\]: RawKeyboard listener not working as intended on web (Ctrl + D opens bookmark) · Issue #91603 · flutter/flutter --- \[Web\]\[Windows\]：RawKeyboard 侦听器无法在 Web 上按预期工作（Ctrl + D 打开书签）·问题 #91603·flutter/flutter](https://github.com/flutter/flutter/issues/91603)
+    await Future.delayed(30.milliseconds);
+    //todo 只清理 合适的 可能得写 window、mac 插件
+    // /Users/apple/Work/dev/flutter/packages/flutter/lib/src/services/system_channels.dart:284
+    // static const BasicMessageChannel<Object?> keyEvent = BasicMessageChannel<Object?>(
+    //       'flutter/keyevent',
+    //       JSONMessageCodec(),
+    //   );
+    // ignore: invalid_use_of_visible_for_testing_member
+    RawKeyboard.instance.clearKeysPressed();
   }
 
   Future<void> tryHideWindow({bool mustHide = false}) async {
     if (!mustHide && clipboardVM.alwaysOnTop.value) {
       await windowManager.blur();
-      // await Future.delayed(100.milliseconds);
-      //todo 只清理 合适的 可能得写 window、mac 插件
-      // /Users/apple/Work/dev/flutter/packages/flutter/lib/src/services/system_channels.dart:284
-      // static const BasicMessageChannel<Object?> keyEvent = BasicMessageChannel<Object?>(
-      //       'flutter/keyevent',
-      //       JSONMessageCodec(),
-      //   );
-      // ignore: invalid_use_of_visible_for_testing_member
-      RawKeyboard.instance.clearKeysPressed();
-      return;
+    }else{
+      await windowManager.hide();
     }
-    return await windowManager.hide();
   }
 
   @override
