@@ -28,7 +28,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>with  WindowListener {
+class _HomePageState extends State<HomePage> with WindowListener {
   late ScrollController _scrollController;
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
 
@@ -310,22 +310,24 @@ class _HomePageState extends State<HomePage>with  WindowListener {
       },
       child: _buildSecondPanel(child),
     );
-    var bottonSheet = Obx((){
-      if(clipboardVM.alwaysOnTop.value ) {
+    var bottonSheet = Obx(() {
+      if (clipboardVM.alwaysOnTop.value) {
         return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TextButton(
-            onPressed: (){
-              clipboardVM.markdownType.value = true;
-              Get.toNamed("markdown");
-            },
-            child: const Text("markdown type"),
-          )
-        ],
-      );
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                clipboardVM.markdownType.value = true;
+                Get.toNamed("markdown");
+              },
+              child: const Text("markdown type"),
+            )
+          ],
+        );
       }
-      return const SizedBox(height: 0,);
+      return const SizedBox(
+        height: 0,
+      );
     });
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
@@ -440,14 +442,19 @@ class _HomePageState extends State<HomePage>with  WindowListener {
     );
   }
 
-  ElevatedButton buildPinWindowBtn() {
-    return ElevatedButton(
+  IconButton buildPinWindowBtn() {
+    return IconButton(
+        iconSize: 16,
         focusNode: FocusNode().apply((e) => e.skipTraversal = true),
         onPressed: () async {
-      await togglePin();
-    }, child: Obx(() {
-      return Text((clipboardVM.alwaysOnTop.value) ? 'Unpin' : 'Pin');
-    }));
+          await togglePin();
+        },
+        icon: Obx(() {
+          var isTop = clipboardVM.alwaysOnTop.value;
+          return isTop
+              ? const Icon(Icons.push_pin)
+              : const Icon(Icons.push_pin_outlined);
+        }));
   }
 
   Future<void> togglePin() async {
@@ -495,7 +502,7 @@ class _HomePageState extends State<HomePage>with  WindowListener {
   Future<void> tryHideWindow({bool mustHide = false}) async {
     if (!mustHide && clipboardVM.alwaysOnTop.value) {
       await windowManager.blur();
-    }else{
+    } else {
       await windowManager.hide();
     }
   }
