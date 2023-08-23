@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 
@@ -26,12 +27,15 @@ class PasteboardItemView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: color,
-      padding: const EdgeInsets.only(left: 6, right: 6, top: 1, bottom: 1),
+      padding: const EdgeInsets.only(left: 1.5, right: 1.5, top: 1, bottom: 1),
       child: Material(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(0.5),
         // color: getColor(index),
         // color: Colors.deepPurple.shade50,
         child: InkWell(
+          focusNode: FocusNode().apply((p0) {
+            p0.canRequestFocus = false;
+          }),
           borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),
           onHover: (hovering) {

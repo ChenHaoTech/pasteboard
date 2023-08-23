@@ -227,6 +227,14 @@ class _HomePageState extends State<HomePage> with WindowListener {
       ],
     );
     child = KeyboardBindingWidget<CustomIntent>(
+      // KeyEventResult Function(FocusNode node, RawKeyEvent event)
+      onkey: (FocusNode node, RawKeyEvent event) {
+        // EasyLoading.showSuccess("status: ${event.runtimeType}, ${event.logicalKey}");
+        // if (event is RawKeyDownEvent) {
+        //
+        // }
+        return KeyEventResult.ignored;
+      },
       focusNode: _keyBoardWidgetFsn,
       metaIntentSet: {
         LogicalKeySet(LogicalKeyboardKey.arrowUp): const CustomIntent("up"),
@@ -275,21 +283,27 @@ class _HomePageState extends State<HomePage> with WindowListener {
           case "esc":
             var selectedItems = PasteboardItem.selectedItems;
             if (selectedItems.isNotEmpty) {
-              Get.defaultDialog(
-                content: const Text("clear all selected?"),
-                confirm: TextButton(
-                  autofocus: true,
-                  onPressed: () {
-                    Get.back(result: true);
-                    for (var value in selectedItems.toList()) {
-                      value.selected.value = false;
-                    }
-                    // 关闭弹窗
-                    EasyLoading.showSuccess("clear all selected");
-                  },
-                  child: const Text("confirm"),
-                ),
-              );
+              if(selectedItems.length==1){
+                for (var value in selectedItems.toList()) {
+                  value.selected.value = false;
+                }
+              }else{
+                  Get.defaultDialog(
+                  content: const Text("clear all selected?"),
+                  confirm: TextButton(
+                    autofocus: true,
+                    onPressed: () {
+                      Get.back(result: true);
+                      for (var value in selectedItems.toList()) {
+                        value.selected.value = false;
+                      }
+                      // 关闭弹窗
+                      EasyLoading.showSuccess("clear all selected");
+                    },
+                    child: const Text("confirm"),
+                  ),
+                );
+              }
               return;
             }
             if (clipboardVM.searchKey.isNotEmpty) {

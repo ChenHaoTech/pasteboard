@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 
 /*DEMO
 KeyboardBindingWidget _test_buildKeyboardBindingWidget(
@@ -130,19 +131,21 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
   final Function(T intent, BuildContext context) onMetaAction;
   final Widget child;
   final FocusNode? focusNode;
+  final FocusOnKeyCallback? onkey;
 
   const KeyboardBindingWidget({
     Key? key,
     required this.child,
     required this.onMetaAction,
-    required this.metaIntentSet, this.focusNode,
+    required this.metaIntentSet, this.focusNode, this.onkey,
   }) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {
     return FocusableActionDetector(
       autofocus: true,
-      focusNode: focusNode ?? FocusNode(),
+      focusNode: (focusNode ?? FocusNode()).apply((p0) {p0.onKey = this.onkey;}),
       shortcuts: metaIntentSet,
       actions: <Type, Action<Intent>>{
         T: CallbackAction<T>(
