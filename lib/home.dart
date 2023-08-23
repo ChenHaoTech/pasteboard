@@ -160,8 +160,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
             event.isMetaPressed) {
           var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
           if (pasteboardItems.length > i) {
+            var item = pasteboardItems[i];
+            var task = PasteUtils.doCopy(item);
             await tryHideWindow();
-            await PasteUtils.doAsyncPaste(pasteboardItems[i]);
+            await task;
+            await PasteUtils.doPaste(item);
             return;
           }
         }
@@ -341,8 +344,10 @@ class _HomePageState extends State<HomePage> with WindowListener {
             item.selected.value = !(selected.value);
           } else {
             // 没有 cmd 直接粘贴
+            var task = PasteUtils.doCopy(item);
             await tryHideWindow();
-            await PasteUtils.doAsyncPaste(item);
+            await task;
+            await PasteUtils.doPaste(item);
           }
         },
       );

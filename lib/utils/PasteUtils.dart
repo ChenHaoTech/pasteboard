@@ -6,7 +6,12 @@ import 'package:pasteboard/pasteboard.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
 
 class PasteUtils {
-  static Future<void> doAsyncPaste(PasteboardItem item) async {
+  static Future<void> doPaste(PasteboardItem item) async {
+    // ignore: deprecated_member_use
+    return await keyPressSimulator.simulateCtrlVKeyPress();
+  }
+
+  static Future<void> doCopy(PasteboardItem item) async {
     if (item.type == PasteboardItemType.text) {
       Clipboard.setData(ClipboardData(text: item.text!));
     } else if (item.type == PasteboardItemType.html) {
@@ -14,8 +19,6 @@ class PasteUtils {
     } else if (item.type == PasteboardItemType.image) {
       await Pasteboard.writeFiles([item.path!]);
     }
-    // ignore: deprecated_member_use
-    return await keyPressSimulator.simulateCtrlVKeyPress();
   }
 
   static Future<bool> doAsyncPasteMerge(List<PasteboardItem> items) async {
