@@ -42,7 +42,8 @@ class ClipboardVM extends GetxController with ClipboardListener {
 
   bool predict(PasteboardItem p0) {
     // 以后可以变得更复杂
-    return p0.text?.contains(searchKey.value) ?? false;
+    return p0.text?.toLowerCase().contains(searchKey.value.toLowerCase()) ??
+        false;
   }
   @override
   void onClipboardChanged() async {
