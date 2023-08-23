@@ -35,6 +35,9 @@ class PasteboardItemView extends StatelessWidget {
         child: InkWell(
           focusNode: FocusNode().apply((p0) {
             p0.canRequestFocus = false;
+            p0.addListener(() {
+              PasteboardItem.current = item;
+            });
           }),
           borderRadius: BorderRadius.circular(6),
           onTap: onTap == null ? null : () => onTap!(),

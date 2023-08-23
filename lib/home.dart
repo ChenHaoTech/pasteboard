@@ -43,12 +43,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
-  final HotKey _copy = HotKey(
-    KeyCode.keyC,
-    modifiers: [KeyModifier.meta],
-    // Set hotkey scope (default is HotKeyScope.system)
-    scope: HotKeyScope.inapp, // Set as inapp-wide hotkey.
-  );
 
   @override
   void initState() {
@@ -74,25 +68,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
         bindHotKey();
       },
     );
-    // command + c
-    hotKeyManager.register(
-      _copy,
-      keyDownHandler: (hotKey) async {
-        var items = clipboardVM.pasteboardItemsWithSearchKey
-            .where((p0) => p0.selected.value)
-            .toList();
-        var list = items.reversed.toList();
-        // if (list.isEmpty) {
-        //   list = clipboardVM.pasteboardItemsWithSearchKey
-        //       .getRange(curFocusIdx, curFocusIdx + 1)
-        //       .toList();
-        // }
-        if (await PasteUtils.doAsyncPasteMerge(list)) {
-          EasyLoading.showSuccess("copy success,count:${list.length}");
-        }
-        return;
-      },
-    );
     // command + w 关闭窗口
     hotKeyManager.register(
       HotKey(
@@ -111,6 +86,21 @@ class _HomePageState extends State<HomePage> with WindowListener {
         await _requestWindowShow();
       },
     );
+  }
+
+  Future<void> onCopyKeyDown() async {
+      var items = clipboardVM.pasteboardItemsWithSearchKey
+        .where((p0) => p0.selected.value)
+        .toList();
+    var list = items.reversed.toList();
+
+    if (list.isEmpty) {
+      list = PasteboardItem.current?.map((val) => [val]) ?? [];
+    }
+    if (await PasteUtils.doAsyncPasteMerge(list)) {
+      EasyLoading.showSuccess("copy success,count:${list.length}");
+    }
+    return;
   }
 
   Future<void> _requestWindowShow() async {
@@ -211,7 +201,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
   void dispose() {
     super.dispose();
     clipboardWatcher.stop();
-    hotKeyManager.unregister(_copy);
     hotKeyManager.onRawKeyEvent = null;
   }
 
@@ -249,6 +238,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
             const CustomIntent("meta_f"),
         LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
             const CustomIntent("meta_p"),
+        LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
+        const CustomIntent("meta_c"),
         LogicalKeySet(KeyCode.escape.logicalKey): const CustomIntent("esc"),
       },
       onMetaAction: (CustomIntent intent, BuildContext context) async {
@@ -316,6 +307,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
             } else {
               tryHideWindow();
             }
+            return;
+          case "meta_c":
+            onCopyKeyDown();
             return;
           default:
             EasyLoading.showSuccess("unknow: ${intent.key}");

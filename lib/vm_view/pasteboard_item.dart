@@ -9,6 +9,7 @@ enum PasteboardItemType {
   file,
 }
 class PasteboardItem {
+  static PasteboardItem? current;
   static var selectedItems = RxList<PasteboardItem>();
   var selected = RxBool(false);
   int? id;
