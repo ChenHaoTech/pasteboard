@@ -13,9 +13,9 @@ class PasteUtils {
 
   static Future<void> doCopy(PasteboardItem item) async {
     if (item.type == PasteboardItemType.text) {
-      Clipboard.setData(ClipboardData(text: item.text!));
+      await Clipboard.setData(ClipboardData(text: item.text!));
     } else if (item.type == PasteboardItemType.html) {
-      RichClipboard.setData(RichClipboardData(text: item.html!));
+      await RichClipboard.setData(RichClipboardData(text: item.html!));
     } else if (item.type == PasteboardItemType.image) {
       await Pasteboard.writeFiles([item.path!]);
     }

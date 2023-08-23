@@ -457,9 +457,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   void clearKeyPress() {
-    var keys = RawKeyboard.instance.keysPressed;
-    print("clearKeyPress keys: ${keys}");
-    // RawKeyboard.instance.clearKeysPressed();
+    Future.microtask(() {
+      var keys = RawKeyboard.instance.keysPressed;
+      print("clearKeyPress keys: ${keys}");
+      RawKeyboard.instance.clearKeysPressed();
+    });
   }
 
   Future<void> tryHideWindow({bool mustHide = false}) async {
