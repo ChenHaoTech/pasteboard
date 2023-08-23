@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -440,7 +441,9 @@ class _HomePageState extends State<HomePage>with  WindowListener {
   }
 
   ElevatedButton buildPinWindowBtn() {
-    return ElevatedButton(onPressed: () async {
+    return ElevatedButton(
+        focusNode: FocusNode().apply((e) => e.skipTraversal = true),
+        onPressed: () async {
       await togglePin();
     }, child: Obx(() {
       return Text((clipboardVM.alwaysOnTop.value) ? 'Unpin' : 'Pin');
