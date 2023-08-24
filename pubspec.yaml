@@ -53,6 +53,7 @@ dependencies:
   desktop_lifecycle:
     path: package/desktop_lifecycle
   rich_clipboard: ^1.0.1
+  system_tray: ^2.0.3
 
 dev_dependencies:
   flutter_test:
@@ -75,11 +76,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - asserts/app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
