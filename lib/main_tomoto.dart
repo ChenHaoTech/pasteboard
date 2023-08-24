@@ -12,22 +12,54 @@ import 'package:audioplayers/audioplayers.dart';
 loadAsset() async {
   await rootBundle.load('asserts/app_icon.png');
 }
-openAudio(){
-  // 注意不要泄漏了
-  AudioPlayer().play(AssetSource('1.mp3'));
+
+// todo 记得复用?
+// 注意不要泄漏了
+final audioPlayer = AudioPlayer();
+
+openAudio() {
+  var state = audioPlayer.state;
+  // 播放时 按下暂停
+  if (state == PlayerState.playing) {
+    audioPlayer.pause();
+    timer.cancel();
+    systemTray.setTitle("");
+  } else if (state == PlayerState.stopped ||
+      state == PlayerState.completed ||
+      state == PlayerState.disposed) {
+    //  已经停止的 直接播放
+    audioPlayer.play(AssetSource('03-White-Noise-10min.mp3'));
+    beginTime = DateTime.now();
+    startTimer();
+  } else if (state == PlayerState.paused) {
+    // 暂停的继续播放
+    audioPlayer.resume();
+    beginTime = DateTime.now();
+    startTimer();
+  }
+}
+
+DateTime beginTime = DateTime.now();
+Timer timer = Timer(Duration.zero, () {});
+startTimer() {
+  // 每隔一秒 刷新下 title
+  timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    var diff = DateTime.now().second - beginTime.second;
+    systemTray.setTitle(diff.toString());
+  });
 }
 
 final SystemTray systemTray = SystemTray();
+
 Future<void> initSystemTray() async {
   //todo 支持 windows
   if (Platform.isWindows) return;
-  String path = 'asserts/app_icon.png';
+  String path = 'assets/app_icon.png';
 
   final AppWindow appWindow = AppWindow();
 
   // We first init the systray menu
   await systemTray.initSystemTray(
-    title: "system tray",
     iconPath: path,
   );
 
@@ -38,10 +70,6 @@ Future<void> initSystemTray() async {
     MenuItemLabel(label: 'Hide', onClicked: (menuItem) => appWindow.hide()),
     MenuItemLabel(label: 'Exit', onClicked: (menuItem) => appWindow.close()),
   ]);
-  // 每隔一秒 刷新下 title
-  // Timer.periodic(const Duration(seconds: 1), (timer) {
-  //   systemTray.setTitle(DateTime.now().toString());
-  // });
 
   // set context menu
   await systemTray.setContextMenu(menu);
@@ -63,15 +91,19 @@ void main(List<String> args) async {
   // // Must add this line.
   await hotKeyManager.unregisterAll();
 
-  hotKeyManager.register(HotKey(
-    KeyCode.keyC,
-    modifiers: [
-      KeyModifier.control,
-    ],
-    // Set hotkey scope (default is HotKeyScope.system)
-    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
-  ),keyDownHandler: (HotKey hotKey) {
-      openAudio();
+  hotKeyManager.register(
+      HotKey(
+        KeyCode.keyP,
+        modifiers: [
+          KeyModifier.control,
+          KeyModifier.shift,
+          KeyModifier.alt,
+          KeyModifier.meta,
+        ],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+      ), keyDownHandler: (HotKey hotKey) {
+    openAudio();
   });
   // WindowOptions windowOptions = const WindowOptions(
   //   size: Size(210 * 3, 350),
