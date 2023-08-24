@@ -5,18 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:system_tray/system_tray.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 loadAsset() async {
   await rootBundle.load('asserts/app_icon.png');
 }
+openAudio(){
+  // 注意不要泄漏了
+  AudioPlayer().play(AssetSource('1.mp3'));
+}
+
+final SystemTray systemTray = SystemTray();
 Future<void> initSystemTray() async {
   //todo 支持 windows
   if (Platform.isWindows) return;
   String path = 'asserts/app_icon.png';
 
   final AppWindow appWindow = AppWindow();
-  final SystemTray systemTray = SystemTray();
 
   // We first init the systray menu
   await systemTray.initSystemTray(
@@ -54,8 +61,18 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   initSystemTray();
   // // Must add this line.
-  // await windowManager.ensureInitialized();
-  // await hotKeyManager.unregisterAll();
+  await hotKeyManager.unregisterAll();
+
+  hotKeyManager.register(HotKey(
+    KeyCode.keyC,
+    modifiers: [
+      KeyModifier.control,
+    ],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+  ),keyDownHandler: (HotKey hotKey) {
+      openAudio();
+  });
   // WindowOptions windowOptions = const WindowOptions(
   //   size: Size(210 * 3, 350),
   //   center: true,

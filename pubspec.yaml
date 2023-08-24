@@ -54,6 +54,7 @@ dependencies:
     path: package/desktop_lifecycle
   rich_clipboard: ^1.0.1
   system_tray: ^2.0.3
+  audioplayers: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -78,7 +79,7 @@ flutter:
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
   assets:
-    - asserts/app_icon.png
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
