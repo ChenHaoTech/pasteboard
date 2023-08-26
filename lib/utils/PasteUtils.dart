@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
@@ -8,7 +11,11 @@ import 'package:rich_clipboard/rich_clipboard.dart';
 class PasteUtils {
   static Future<void> doPaste(PasteboardItem item) async {
     // ignore: deprecated_member_use
-    return await keyPressSimulator.simulateCtrlVKeyPress();
+    await keyPressSimulator.simulateCtrlVKeyPress();
+    await Future.delayed(10.milliseconds, () async {
+      //todo  只对 mac 起作用?
+      Get.find<HotKeySerice>().fixHotKeyBug();
+    });
   }
 
   static Future<void> doCopy(PasteboardItem item) async {

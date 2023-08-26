@@ -1,3 +1,6 @@
+// ignore_for_file: non_constant_identifier_names
+
+import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:get/get.dart';
@@ -54,4 +57,10 @@ class HotKeySerice extends GetxController {
 
   @override
   void onReady() {}
+
+
+  void fixHotKeyBug(){
+    // ignore: invalid_use_of_visible_for_testing_member
+    RawKeyboard.instance.clearKeysPressed();
+  }
 }

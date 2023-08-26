@@ -159,9 +159,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
           if (pasteboardItems.length > i) {
             var item = pasteboardItems[i];
             var task = PasteUtils.doCopy(item);
-            await tryHideWindow();
+            await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
+            if(clipboardVM.alwaysOnTop.value){
+              windowManager.focus();
+            }
             return;
           }
         }
@@ -324,9 +327,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
           } else {
             // 没有 cmd 直接粘贴
             var task = PasteUtils.doCopy(item);
-            await tryHideWindow();
+            await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
+            if(clipboardVM.alwaysOnTop.value){
+              windowManager.focus();
+            }
           }
         },
       );

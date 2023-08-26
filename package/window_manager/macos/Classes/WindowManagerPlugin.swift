@@ -234,6 +234,13 @@ public class WindowManagerPlugin: NSObject, FlutterPlugin {
             windowManager.setHasShadow(args)
             result(true)
             break
+        case "ignore_copy_key":
+            let source = CGEventSource(stateID: .combinedSessionState)
+                 // Disable local keyboard events while pasting
+                 source?.setLocalEventsFilterDuringSuppressionState([.permitLocalMouseEvents, .permitSystemDefinedEvents],
+                                                                    state: .eventSuppressionStateSuppressionInterval)
+            result(true)
+            break
         case "getOpacity":
             result(windowManager.getOpacity())
             break
