@@ -11,6 +11,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'ClipboardVM.dart';
 import 'home.dart';
+import 'main_tomoto.dart';
 
 void main(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
@@ -26,9 +27,10 @@ void main(List<String> args) async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
+  await hotKeyManager.unregisterAll();
+  await tomotoBinding();
   // Must add this line.
   await windowManager.ensureInitialized();
-  await hotKeyManager.unregisterAll();
   WindowOptions windowOptions = const WindowOptions(
     size: Size(210 * 3, 350),
     center: true,

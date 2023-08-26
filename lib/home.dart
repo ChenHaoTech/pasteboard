@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   void bindHotKey() async {
-    await hotKeyManager.unregisterAll();
+    // await hotKeyManager.unregisterAll();
     bind1_9();
 
     // todo only 测试环境

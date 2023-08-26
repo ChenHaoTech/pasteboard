@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'database_helper.dart';
 
@@ -18,8 +19,10 @@ class ClipboardVM extends GetxController with ClipboardListener {
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
   final searchKey = RxString("");
   final alwaysOnTop = RxBool(false);
-  final editMarkdownContext = RxString("");
   final markdownType = RxBool(false);
+  final lastClipTxt = RxString("");
+
+  var editMarkdownContext = "";
 
   @override
   void onInit() {
@@ -104,8 +107,8 @@ class ClipboardVM extends GetxController with ClipboardListener {
           html: html, sha256: sha256); // html
     }
     // bmcheng
-    if (markdownType.value) {
-      editMarkdownContext.value += "\n${targetItem?.text}";
+    if (markdownType.value && !await windowManager.isFocused()) {
+      lastClipTxt.value = targetItem?.text ?? (targetItem?.html ?? "");
     }
     return targetItem;
   }

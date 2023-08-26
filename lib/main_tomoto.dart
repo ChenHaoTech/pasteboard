@@ -87,24 +87,7 @@ Future<void> initSystemTray() async {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  initSystemTray();
-  // // Must add this line.
-  await hotKeyManager.unregisterAll();
-
-  hotKeyManager.register(
-      HotKey(
-        KeyCode.keyP,
-        modifiers: [
-          KeyModifier.control,
-          KeyModifier.shift,
-          KeyModifier.alt,
-          KeyModifier.meta,
-        ],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.system, // Set as inapp-wide hotkey.
-      ), keyDownHandler: (HotKey hotKey) {
-    openAudio();
-  });
+  await tomotoBinding();
   // WindowOptions windowOptions = const WindowOptions(
   //   size: Size(210 * 3, 350),
   //   center: true,
@@ -126,21 +109,26 @@ void main(List<String> args) async {
   // configLoading();
 }
 
-void configLoading() {
-  EasyLoading.instance
-    ..displayDuration = const Duration(milliseconds: 2000)
-    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
-    ..loadingStyle = EasyLoadingStyle.dark
-    ..indicatorSize = 45.0
-    ..radius = 10.0
-    ..progressColor = Colors.yellow
-    ..backgroundColor = Colors.green
-    ..indicatorColor = Colors.yellow
-    ..textColor = Colors.yellow
-    ..maskColor = Colors.blue.withOpacity(0.5)
-    ..userInteractions = true
-    ..dismissOnTap = false;
-  // ..customAnimation = CustomAnimation();
+Future<void> tomotoBinding() async {
+  initSystemTray();
+  // // Must add this line.
+
+  var hotKey = HotKey(
+        KeyCode.keyP,
+        modifiers: [
+          KeyModifier.control,
+          KeyModifier.shift,
+          KeyModifier.alt,
+          KeyModifier.meta,
+        ],
+        // Set hotkey scope (default is HotKeyScope.system)
+        scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+      );
+  await hotKeyManager.unregister(hotKey);
+  await hotKeyManager.register(
+      hotKey, keyDownHandler: (HotKey hotKey) {
+    openAudio();
+  });
 }
 
 class MyApp extends StatelessWidget {
