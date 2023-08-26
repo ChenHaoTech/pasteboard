@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
 import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
 import 'package:get/get.dart';
@@ -48,6 +49,7 @@ void main(List<String> args) async {
   windowManager.setResizable(true);
   windowManager.setVisibleOnAllWorkspaces(false);
   Get.put(ClipboardVM());
+  Get.put(HotKeySerice());
   runApp(const MyApp());
   configLoading();
 }

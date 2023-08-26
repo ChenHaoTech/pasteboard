@@ -18,9 +18,13 @@ class MarkdownPage extends StatelessWidget {
     var controller =
         TextEditingController(text: clipboardVM.editMarkdownContext);
     var textField = TextField(
+      autofocus: true,
       controller: controller,
-      decoration: const InputDecoration(border: InputBorder.none,
-          contentPadding: EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 8)),
+      decoration: InputDecoration(border: InputBorder.none,
+          hintText: "The content you copied will automatically come here. "
+              "\n😘Try cmd c to copy something",
+          hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+          contentPadding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 8)),
       maxLines: null,
       style: const TextStyle(fontSize: 14),
       onChanged: (value) {
@@ -33,12 +37,13 @@ class MarkdownPage extends StatelessWidget {
           var origin=controller.text;
           var selection = controller.selection;
           var insertPos = selection.extentOffset;
-          if (insertPos < 0 || insertPos >= origin.length) {
+          if (insertPos <= 0 || insertPos >= origin.length) {
             insertPos = origin.length;
             p0 = "\n$p0";
           }
           controller.text =
-              "${origin.substring(0, insertPos)}${p0}${origin.substring(insertPos)}";
+              "${origin.substring(0, insertPos)}$p0${origin.substring(insertPos)}";
+          print("controller.text = ${controller.text}");
           controller.selection = TextSelection.fromPosition(
               TextPosition(offset: insertPos + p0.length));
         });
