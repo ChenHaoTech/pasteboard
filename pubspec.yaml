@@ -55,6 +55,8 @@ dependencies:
   rich_clipboard: ^1.0.1
   system_tray: ^2.0.3
   audioplayers: ^5.1.0
+  code_text_field: ^1.1.0
+  search_highlight_text: ^1.0.0+2
 
 dev_dependencies:
   flutter_test:
