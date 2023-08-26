@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
+import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/utils/PasteUtils.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
@@ -249,30 +250,10 @@ class _HomePageState extends State<HomePage> with WindowListener {
         ],
       ),
     );
-    var bottonSheet = Obx(() {
-      if (clipboardVM.alwaysOnTop.value) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () {
-                clipboardVM.markdownType.value = true;
-                Get.toNamed("markdown");
-              },
-              child: const Text("markdown type"),
-            )
-          ],
-        );
-      }
-      return const SizedBox(
-        height: 0,
-      );
-    });
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: child,
-      bottomSheet: bottonSheet,
     );
   }
 
@@ -405,7 +386,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         iconSize: 16,
         focusNode: FocusNode().apply((e) => e.skipTraversal = true),
         onPressed: () async {
-          await togglePin();
+          Get.find<WindowService>().togglePin();
         },
         icon: Obx(() {
           var isTop = clipboardVM.alwaysOnTop.value;
@@ -413,11 +394,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
               ? const Icon(Icons.push_pin)
               : const Icon(Icons.push_pin_outlined);
         }));
-  }
-
-  Future<void> togglePin() async {
-    await windowManager.setAlwaysOnTop(!clipboardVM.alwaysOnTop.value);
-    clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
   }
 
   ElevatedButton buildCreateWindowBtn() {
@@ -489,7 +465,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
         child: Text(
-          "${FocusScope.of(context).focusedChild?.context?.widget}, $keys",
+          "$keys,${FocusScope.of(context).focusedChild?.context?.widget}",
         ),
       );
     });
@@ -510,10 +486,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
       LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("meta_f", (context, intent) async {
         _searchFsn.requestFocus();
-      }),
-      LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
-          CustomIntentWithAction("meta_p", (context, intent) async {
-        togglePin();
       }),
       LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("meta_c", (context, intent) async {

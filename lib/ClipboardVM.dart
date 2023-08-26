@@ -19,7 +19,6 @@ class ClipboardVM extends GetxController with ClipboardListener {
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
   final searchKey = RxString("");
   final alwaysOnTop = RxBool(false);
-  final markdownType = RxBool(false);
   final lastClipTxt = RxString("");
 
   var editMarkdownContext = "";
@@ -106,10 +105,7 @@ class ClipboardVM extends GetxController with ClipboardListener {
       targetItem = PasteboardItem(PasteboardItemType.html,
           html: html, sha256: sha256); // html
     }
-    // bmcheng
-    if (markdownType.value && !await windowManager.isFocused()) {
-      lastClipTxt.value = targetItem?.text ?? (targetItem?.html ?? "");
-    }
+    lastClipTxt.value = targetItem?.text ?? (targetItem?.html ?? "");
     return targetItem;
   }
 

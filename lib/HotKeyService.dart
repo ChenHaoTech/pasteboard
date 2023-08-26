@@ -1,10 +1,12 @@
-import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
+import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
+import 'package:window_manager/window_manager.dart';
 
 class HotKeySerice extends GetxController {
+  late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
   @override
   void onInit() {
     super.onInit();
@@ -27,10 +29,17 @@ class HotKeySerice extends GetxController {
         HotKey(KeyCode.keyE,
             modifiers: [KeyModifier.meta],
             scope: HotKeyScope.inapp), keyDownHandler: (hotKey) {
-      Get.find<ClipboardVM>().markdownType.value = true;
       Get.toNamed("markdown");
     });
+    // cmd + p togglePin
+    hotKeyManager.register(
+        HotKey(KeyCode.keyP,
+            modifiers: [KeyModifier.meta],
+            scope: HotKeyScope.inapp), keyDownHandler: (hotKey) {
+      Get.find<WindowService>().togglePin();
+    });
   }
+
 
   void space_test() {
     hotKeyManager.register(HotKey(KeyCode.space), keyDownHandler: (hotKey) {
