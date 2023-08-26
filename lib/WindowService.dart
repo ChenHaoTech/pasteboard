@@ -15,6 +15,10 @@ class WindowService extends GetxController {
     await windowManager.setAlwaysOnTop(!clipboardVM.alwaysOnTop.value);
     clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
   }
+  ignoreKey(){
+    print("windowManager.invokeMethod;");
+    windowManager.invokeMethod("ignore_copy_key");
+  }
 
   /*试试 看  fn 等键的绑定? */
   @override
