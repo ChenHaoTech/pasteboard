@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/utils/SimpleGetController.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 
 /**
@@ -18,7 +19,8 @@ class MarkdownPage extends StatelessWidget {
         TextEditingController(text: clipboardVM.editMarkdownContext);
     var textField = TextField(
       controller: controller,
-      decoration: const InputDecoration(border: InputBorder.none),
+      decoration: const InputDecoration(border: InputBorder.none,
+          contentPadding: EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 8)),
       maxLines: null,
       style: const TextStyle(fontSize: 14),
       onChanged: (value) {
@@ -30,13 +32,15 @@ class MarkdownPage extends StatelessWidget {
         return clipboardVM.lastClipTxt.listen((p0) {
           var origin=controller.text;
           var selection = controller.selection;
-          var curOffset = selection.extentOffset;
-          if(curOffset<0 || curOffset>origin.length){
-            curOffset = origin.length;
+          var insertPos = selection.extentOffset;
+          if (insertPos < 0 || insertPos >= origin.length) {
+            insertPos = origin.length;
+            p0 = "\n$p0";
           }
-          controller.text = origin.substring(0, curOffset) +
-              "${p0}" +
-              origin.substring(curOffset);
+          controller.text =
+              "${origin.substring(0, insertPos)}${p0}${origin.substring(insertPos)}";
+          controller.selection = TextSelection.fromPosition(
+              TextPosition(offset: insertPos + p0.length));
         });
       }),
       builder: (sc) {
@@ -45,7 +49,15 @@ class MarkdownPage extends StatelessWidget {
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Markdown Mode"),
+        toolbarHeight: 30,
+        leading: IconButton(
+            onPressed: () {
+              Get.back();
+            },
+          icon: const Icon(Icons.arrow_back_ios_sharp),
+          iconSize: 16,
+        ),
+        title: const Text("Markdown Mode", style: TextStyle(fontSize: 15),),
         actions: [
           IconButton(onPressed: () {
             clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
