@@ -218,18 +218,10 @@ class _HomePageState extends State<HomePage> with WindowListener {
         buildPasteboardHis(),
       ],
     );
-    child = KeyboardBindingWidget<CustomIntentWithAction>(
+    child = MyFocusableActionWidget<CustomIntentWithAction>(
       // KeyEventResult Function(FocusNode node, RawKeyEvent event)
       onRawKeyEvent: (FocusNode node, RawKeyEvent event) {
         updateStatusBarHint.value++;
-        if (event.isMetaPressed && event.character != "") {
-          // 很骚的解决方法
-          Future.microtask(() => clearKeyPress());
-        }
-        // EasyLoading.showSuccess("status: ${event.runtimeType}, ${event.logicalKey}");
-        // if (event is RawKeyDownEvent) {
-        //
-        // }
         return KeyEventResult.ignored;
       },
       focusNode: _keyBoardWidgetFsn,
@@ -239,8 +231,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
         //   kw.enableIntent.value = false;
         // }
       },
-      metaIntentSet: metaIntentSet,
-      onMetaAction:
+      intentSet: metaIntentSet,
+      onAction:
           (CustomIntentWithAction intent, BuildContext context) async {
         await intent.func(context, intent);
         // clearKeyPress();

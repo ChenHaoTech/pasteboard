@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 
@@ -96,9 +97,9 @@ class MetaIntentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var keyMap = {};
-    return KeyboardBindingWidget(
+    return MyFocusableActionWidget(
       // metaIntentSet: meta_dig0_9.map((key, value) => MapEntry(value.$1, key)),
-      metaIntentSet: {
+      intentSet: {
         meta_0: MetaIntent(0),
         meta_1: MetaIntent(1),
         meta_2: MetaIntent(2),
@@ -110,7 +111,7 @@ class MetaIntentWidget extends StatelessWidget {
         meta_8: MetaIntent(8),
         meta_9: MetaIntent(9),
       },
-      onMetaAction: (Intent intent, BuildContext context) {
+      onAction: (Intent intent, BuildContext context) {
         // if()
         // logger.i("MetaIntentWidget, dig: ${intent} ");
         // EasyLoading.showToast("fuck, ${intent.digKey}");
@@ -136,23 +137,23 @@ class CustomIntentWithAction extends Intent {
   CustomIntentWithAction(this.key, this.func,{this.data});
 }
 
-class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
-  final Map<LogicalKeySet, T> metaIntentSet;
-  final Function(T intent, BuildContext context) onMetaAction;
+class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
+  final Map<LogicalKeySet, T> intentSet;
+  final Function(T intent, BuildContext context) onAction;
   final Widget child;
   final FocusNode? focusNode;
   final FocusOnKeyEventCallback? onKeyEvent;
   final enableIntent = RxBool(true);
 
-  final Function(bool, KeyboardBindingWidget)? onFocusChange;
+  final Function(bool, MyFocusableActionWidget)? onFocusChange;
 
   final KeyEventResult Function(FocusNode node, RawKeyEvent event)? onRawKeyEvent;
 
-  KeyboardBindingWidget({
+  MyFocusableActionWidget({
     Key? key,
     required this.child,
-    required this.onMetaAction,
-    required this.metaIntentSet,
+    required this.onAction,
+    required this.intentSet,
     this.focusNode,
     this.onKeyEvent,
     this.onRawKeyEvent,
@@ -177,12 +178,18 @@ class KeyboardBindingWidget<T extends Intent> extends StatelessWidget {
       autofocus: true, // 没有这个 flutter 在 mac 端直接异常了, 起不来
       focusNode: (focusNode ?? FocusNode()).apply((p0) {
         p0.onKeyEvent = this.onKeyEvent;
-        p0.onKey = onRawKeyEvent;
+        p0.onKey = (FocusNode node, RawKeyEvent event){
+          if (event.isMetaPressed && event.character != "") {
+            // 很骚的解决方法
+            Future.microtask(() => Get.find<HotKeySerice>().fixHotKeyBug());
+          }
+          return onRawKeyEvent?.call(node,event)??KeyEventResult.ignored;
+        };
       }),
-      shortcuts: metaIntentSet,
+      shortcuts: intentSet,
       actions: <Type, Action<Intent>>{
         T: CallbackAction<T>(
-          onInvoke: (T intent) => onMetaAction.call(intent, context),
+          onInvoke: (T intent) => onAction.call(intent, context),
         ),
       },
       child: child,

@@ -44,7 +44,8 @@ Timer timer = Timer(Duration.zero, () {});
 startTimer() {
   // 每隔一秒 刷新下 title
   timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    var diff = DateTime.now().second - beginTime.second;
+    // 和当前时间相比 过去了多久
+    var diff = DateTime.now().difference(beginTime).inSeconds;
     systemTray.setTitle(diff.toString());
   });
 }

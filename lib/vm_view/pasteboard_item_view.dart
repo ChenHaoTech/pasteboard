@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
@@ -25,35 +27,51 @@ class PasteboardItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: color,
-      padding: const EdgeInsets.only(left: 1.5, right: 1.5, top: 1, bottom: 1),
-      child: Material(
-        borderRadius: BorderRadius.circular(0.5),
-        // color: getColor(index),
-        // color: Colors.deepPurple.shade50,
-        child: InkWell(
-          onFocusChange: (focus){
-            if (focus) {
-              PasteboardItem.current = item;
-            }
-          },
-          focusNode: FocusNode().apply((p0) {
-            // p0.canRequestFocus = false;
-          }),
-          onTap: onTap == null ? null : () => onTap!(),
-          onHover: (hovering) {
-            hover.value = hovering;
-            // EasyLoading.showSuccess("hover: $hovering");
-          },
-          onLongPress: onLongPress == null ? null : () => onLongPress!(),
-          child: Ink(
-              padding:
-                  const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
-              child: _getWidget(item, context)),
-        ),
-      ),
+    return MyFocusableActionWidget<CustomIntentWithAction>(
+      focusNode: FocusNode().apply((it) {it.skipTraversal = true;}),
+      onAction: (CustomIntentWithAction intent, BuildContext context) {
+        intent.func(context, intent);
+      },
+      intentSet: {
+        LogicalKeySet(LogicalKeyboardKey.keyK, LogicalKeyboardKey.meta):
+        CustomIntentWithAction("meta_k", (context, intent) async {
+          print("meta_k");
+        }),
+      },
+      child: buildContainer(context),
     );
+  }
+
+  Container buildContainer(BuildContext context) {
+    return Container(
+    color: color,
+    padding: const EdgeInsets.only(left: 1.5, right: 1.5, top: 1, bottom: 1),
+    child: Material(
+      borderRadius: BorderRadius.circular(0.5),
+      // color: getColor(index),
+      // color: Colors.deepPurple.shade50,
+      child: InkWell(
+        onFocusChange: (focus){
+          if (focus) {
+            PasteboardItem.current = item;
+          }
+        },
+        focusNode: FocusNode().apply((p0) {
+          // p0.canRequestFocus = false;
+        }),
+        onTap: onTap == null ? null : () => onTap!(),
+        onHover: (hovering) {
+          hover.value = hovering;
+          // EasyLoading.showSuccess("hover: $hovering");
+        },
+        onLongPress: onLongPress == null ? null : () => onLongPress!(),
+        child: Ink(
+            padding:
+                const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 10),
+            child: _getWidget(item, context)),
+      ),
+    ),
+  );
   }
 
   Widget _getWidget(PasteboardItem item, BuildContext context) {
