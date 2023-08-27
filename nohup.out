@@ -1,0 +1,21 @@
+nohup: fl: No such file or directory
+Launching lib/main.dart on macOS in release mode...
+Building macOS application...                                   
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-000658480A92401E }
+{ platform:macOS, arch:x86_64, id:00006000-000658480A92401E }
+Target file "$" not found.
+Launching lib/main.dart on macOS in release mode...
+Launching lib/main.dart on macOS in release mode...
+Building macOS application...                                   
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-000658480A92401E }
+{ platform:macOS, arch:x86_64, id:00006000-000658480A92401E }
+/Users/apple/Work/github/flutter_pasteboard/macos/Pods/Pods.xcodeproj: warning: The macOS deployment target 'MACOSX_DEPLOYMENT_TARGET' is set to 10.11, but the range of supported deployment target versions is 10.13 to 13.0.99. (in target 'FMDB' from project 'Pods')
+
+Flutter run key commands.
+h List all available interactive commands.
+c Clear the screen
+q Quit (terminate the application on the device).
+
+Application finished.

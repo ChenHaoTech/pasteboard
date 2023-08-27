@@ -1,6 +1,8 @@
 // 模仿 kotlin 实现 let、also、apply、run、with、takeIf、takeUnless
 
+import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/get.dart';
 
 extension MapExtension<T> on Iterable<T> {
   Iterable<R> map<R>(R mapper(T val)) {
@@ -39,7 +41,10 @@ extension ObjectExtensions<T> on T {
 
 // toast
 void toast(String msg) {
-  EasyLoading.show(status: msg);
+  EasyLoading.show(status: msg, indicator: Center());
+  Future.delayed(1.seconds, () {
+    EasyLoading.dismiss();
+  });
 }
 
 void main() {

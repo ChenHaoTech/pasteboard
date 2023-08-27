@@ -35,7 +35,7 @@ class PasteboardItemView extends StatelessWidget {
       intentSet: {
         LogicalKeySet(LogicalKeyboardKey.keyK, LogicalKeyboardKey.meta):
         CustomIntentWithAction("meta_k", (context, intent) async {
-          print("meta_k");
+          toast("meta_k");
         }),
       },
       child: buildContainer(context),
