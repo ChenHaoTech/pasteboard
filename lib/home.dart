@@ -232,18 +232,25 @@ class _HomePageState extends State<HomePage> with WindowListener {
         await intent.func(context, intent);
         // clearKeyPress();
       },
-      child: Stack(
-        children: [
-          child,
-          Positioned(
-              bottom: 10, child: SizedBox(height: 20, child: buildStatusBar()))
-        ],
-      ),
+      child: child,
     );
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
-      body: _buildSecondPanel(child),
+      body: Stack(
+        children: [
+          _buildSecondPanel(child),
+          Positioned(
+              bottom: 10, child: SizedBox(height: 20, child: buildStatusBar()))
+        ],
+      ),
+    ).easyShortcuts(
+      intentSet: {
+        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
+        CustomIntentWithAction("meta_f", (context, intent) async {
+          _searchFsn.requestFocus();
+        }),
+      },
     );
   }
 
@@ -271,7 +278,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         style: const TextStyle(fontSize: 14),
         onChanged: (value) {},
       );
-      SchedulerBinding.instance.scheduleFrameCallback((_) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         secondField.requestFocus();
       });
       // coloun
@@ -288,7 +295,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
                 LogicalKeySet(KeyCode.escape.logicalKey):
                 CustomIntentWithAction("esc", (context, intent) async {
                   showSecondPanel.value = false;
-                  _keyBoardWidgetFsn.requestFocus();
+                  //todo 交还焦点给上一个焦点
+                  _searchFsn.requestFocus();
                 }),
               },
             ),
@@ -461,7 +469,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   Widget buildStatusBar() {
     return Obx(() {
-      var hint = updateStatusBarHint.value;
+      updateStatusBarHint.value;
       var keys =
           RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
       return Container(
@@ -485,10 +493,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
           CustomIntentWithAction("down", (context, intent) async {
         var fsn = FocusScope.of(context).focusedChild;
         fsn?.nextFocus();
-      }),
-      LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
-          CustomIntentWithAction("meta_f", (context, intent) async {
-        _searchFsn.requestFocus();
       }),
       LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("meta_c", (context, intent) async {
