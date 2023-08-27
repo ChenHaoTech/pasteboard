@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
 import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -14,10 +16,11 @@ import 'package:window_manager/window_manager.dart';
 import 'ClipboardVM.dart';
 import 'home.dart';
 import 'main_tomoto.dart';
+import 'obsolete/MetaIntent.dart';
 
 void main(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
-    switch(args[2]){
+    switch (args[2]) {
       case 'markdown':
         runApp(MarkdownPage());
         break;
@@ -75,6 +78,16 @@ void configLoading() {
   // ..customAnimation = CustomAnimation();
 }
 
+//todo 要想子界面 也接受对应的 action 和 shorcuts
+Map<LogicalKeySet, CustomIntentWithAction> get globalKeyIntent {
+  return {
+    LogicalKeySet(KeyCode.keyD.logicalKey,LogicalKeyboardKey.meta):
+    CustomIntentWithAction("esc_sldkj", (context, intent) async {
+      toast("msg");
+    }),
+  };
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -82,7 +95,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      shortcuts: globalKeyIntent,
+      actions: <Type, Action<CustomIntentWithAction>>{
+        CustomIntentWithAction: CallbackAction<CustomIntentWithAction>(
+          onInvoke: (CustomIntentWithAction intent) =>
+              intent.func(context, intent),
+        ),
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade50),
         useMaterial3: true,

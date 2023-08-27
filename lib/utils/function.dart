@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:get/get.dart';
 
 extension MapExtension<T> on Iterable<T> {
@@ -9,6 +10,19 @@ extension MapExtension<T> on Iterable<T> {
     return this.map((item) => mapper(item));
   }
 }
+
+// EasyShorcutsWidget 扩展 .shortcuts
+extension EasyShorcutsWidgetExt on Widget{
+  // .shortcuts
+  Widget easyShortcuts(
+      {Map<LogicalKeySet, CustomIntentWithAction>? intentSet}) {
+    return EasyShorcutsWidget(
+      intentSet:  intentSet,
+      child: this,
+    );
+  }
+}
+
 // 对于字符串 强转的 工具 toIntOrNull toFloatOrNull 等
 extension StringExtension on String {
   int? toIntOrNull() {

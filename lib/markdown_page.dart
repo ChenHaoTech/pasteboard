@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
+import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
+import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 
 /**
@@ -94,6 +96,6 @@ class MarkdownPageState extends State<MarkdownPage> {
         ],
       ),
       body: textField,
-    );
+    ).easyShortcuts();
   }
 }

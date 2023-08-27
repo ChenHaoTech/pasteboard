@@ -88,7 +88,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
         await windowService.requestWindowShow(
           () async {
             _scrollController.animateTo(0,
-                duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
+                duration: const Duration(milliseconds: 30),
+                curve: Curves.easeOut);
             _searchFsn.requestFocus();
           },
         );
@@ -147,7 +148,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
-            if(windowService.alwaysOnTop.value){
+            if (windowService.alwaysOnTop.value) {
               windowManager.focus();
             }
             return;
@@ -163,11 +164,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
             .contains(LogicalKeyboardKey.metaLeft) ||
         RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.metaRight);
   }
+
   bool get isShiftPresssd {
     return RawKeyboard.instance.keysPressed
-        .contains(LogicalKeyboardKey.shiftLeft) ||
-        RawKeyboard.instance.keysPressed.contains(
-            LogicalKeyboardKey.shiftRight);
+            .contains(LogicalKeyboardKey.shiftLeft) ||
+        RawKeyboard.instance.keysPressed
+            .contains(LogicalKeyboardKey.shiftRight);
   }
 
   Future<Offset> computePosition() async {
@@ -225,14 +227,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
         // }
       },
       intentSet: metaIntentSet,
-      onAction:
-          (CustomIntentWithAction intent, BuildContext context) async {
+      onAction: (CustomIntentWithAction intent, BuildContext context) async {
         await intent.func(context, intent);
         // clearKeyPress();
       },
       child: Stack(
         children: [
-          _buildSecondPanel(child),
+          child,
           Positioned(
               bottom: 10, child: SizedBox(height: 20, child: buildStatusBar()))
         ],
@@ -241,7 +242,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     return Scaffold(
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
-      body: child,
+      body: _buildSecondPanel(child),
     );
   }
 
@@ -252,7 +253,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
       }
       var res = PasteboardItem.selectedItems.map((it) => it.text).join("\n");
       var textField = TextField(
-        readOnly: true,
         focusNode: FocusNode().apply((it) {
           it.debugLabel = "second panel";
           it.skipTraversal = true;
@@ -272,7 +272,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
           ),
           Flexible(
             flex: 1,
-            child: textField,
+            child: EasyShorcutsWidget(intentSet: {
+
+            }, child: textField),
           ),
         ],
       );
@@ -316,7 +318,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
-            if(windowService.alwaysOnTop.value){
+            if (windowService.alwaysOnTop.value) {
               windowManager.focus();
             }
           }

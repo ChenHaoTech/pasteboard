@@ -137,6 +137,24 @@ class CustomIntentWithAction extends Intent {
   CustomIntentWithAction(this.key, this.func,{this.data});
 }
 
+class EasyShorcutsWidget extends StatelessWidget {
+  final Map<LogicalKeySet, CustomIntentWithAction>? intentSet;
+  final Widget child;
+
+  EasyShorcutsWidget({this.intentSet, required this.child, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MyFocusableActionWidget<CustomIntentWithAction>(
+      intentSet: intentSet ?? {},
+      onAction: (CustomIntentWithAction intent, BuildContext context) {
+        intent.func.call(context, intent);
+      },
+      child: child,);
+  }
+
+}
+
 class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
   final Map<LogicalKeySet, T> intentSet;
   final Function(T intent, BuildContext context) onAction;
