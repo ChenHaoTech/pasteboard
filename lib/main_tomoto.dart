@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -30,6 +29,7 @@ openAudio() {
     //  已经停止的 直接播放
     audioPlayer.play(AssetSource('03-White-Noise-10min.mp3'));
     beginTime = DateTime.now();
+    stopTime = beginTime.add(const Duration(minutes: 25));
     startTimer();
   } else if (state == PlayerState.paused) {
     // 暂停的继续播放
@@ -40,13 +40,25 @@ openAudio() {
 }
 
 DateTime beginTime = DateTime.now();
+DateTime stopTime = DateTime.now();
 Timer timer = Timer(Duration.zero, () {});
+
+String formatDuration(Duration duration) {
+  int minutes = duration.inMinutes;
+  int seconds = duration.inSeconds % 60;
+
+  String formattedMinutes = minutes.toString().padLeft(2, '0');
+  String formattedSeconds = seconds.toString().padLeft(2, '0');
+
+  return '$formattedMinutes:$formattedSeconds';
+}
+
 startTimer() {
   // 每隔一秒 刷新下 title
   timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    var diff = stopTime.difference(DateTime.now());
     // 和当前时间相比 过去了多久
-    var diff = DateTime.now().difference(beginTime).inSeconds;
-    systemTray.setTitle(diff.toString());
+    systemTray.setTitle(formatDuration(diff));
   });
 }
 
@@ -115,16 +127,16 @@ Future<void> tomotoBinding() async {
   // // Must add this line.
 
   var hotKey = HotKey(
-        KeyCode.keyP,
-        modifiers: [
-          KeyModifier.control,
-          KeyModifier.shift,
-          KeyModifier.alt,
-          KeyModifier.meta,
-        ],
-        // Set hotkey scope (default is HotKeyScope.system)
-        scope: HotKeyScope.system, // Set as inapp-wide hotkey.
-      );
+    KeyCode.keyP,
+    modifiers: [
+      KeyModifier.control,
+      KeyModifier.shift,
+      KeyModifier.alt,
+      KeyModifier.meta,
+    ],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+  );
   await hotKeyManager.unregister(hotKey);
   await hotKeyManager.register(
       hotKey, keyDownHandler: (HotKey hotKey) {
