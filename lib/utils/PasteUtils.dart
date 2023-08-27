@@ -12,10 +12,7 @@ class PasteUtils {
   static Future<void> doPaste(PasteboardItem item) async {
     // ignore: deprecated_member_use
     await keyPressSimulator.simulateCtrlVKeyPress();
-    await Future.delayed(10.milliseconds, () async {
-      //todo  只对 mac 起作用?
-      Get.find<HotKeySerice>().fixHotKeyBug();
-    });
+    Get.find<HotKeySerice>().fixHotKeyBug();
   }
 
   static Future<void> doCopy(PasteboardItem item) async {

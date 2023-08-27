@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
@@ -60,7 +61,9 @@ class HotKeySerice extends GetxController {
 
 
   void fixHotKeyBug(){
-    // ignore: invalid_use_of_visible_for_testing_member
-    RawKeyboard.instance.clearKeysPressed();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      // ignore: invalid_use_of_visible_for_testing_member
+      RawKeyboard.instance.clearKeysPressed();
+    });
   }
 }
