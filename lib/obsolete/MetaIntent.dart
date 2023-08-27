@@ -150,6 +150,7 @@ class EasyShorcutsWidget extends StatelessWidget {
       onAction: (CustomIntentWithAction intent, BuildContext context) {
         intent.func.call(context, intent);
       },
+      focusNode: FocusNode(skipTraversal: true),
       child: child,);
   }
 
@@ -180,12 +181,7 @@ class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (enableIntent.value) {
-        return buildFocusableActionDetector(context);
-      }
-      return child;
-    });
+    return buildFocusableActionDetector(context);
   }
 
   FocusableActionDetector buildFocusableActionDetector(BuildContext context) {

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
@@ -246,23 +247,33 @@ class _HomePageState extends State<HomePage> with WindowListener {
     );
   }
 
+  var showSecondPanel = RxBool(false);
+
   Widget _buildSecondPanel(Widget child) {
     return Obx(() {
-      if (PasteboardItem.selectedItems.isEmpty) {
+      if (PasteboardItem.selectedItems.isEmpty && !showSecondPanel.value) {
         return child;
       }
+      var secondField = FocusNode().apply((it) {
+        it.debugLabel = "second panel";
+        it.skipTraversal = true;
+      });
       var res = PasteboardItem.selectedItems.map((it) => it.text).join("\n");
+      if(res.isEmpty){
+        res = PasteboardItem.current?.text ?? "";
+      }
       var textField = TextField(
-        focusNode: FocusNode().apply((it) {
-          it.debugLabel = "second panel";
-          it.skipTraversal = true;
-        }),
+        autofocus: true,
+        focusNode: secondField,
         controller: TextEditingController(text: res),
         decoration: const InputDecoration(border: InputBorder.none),
         maxLines: null,
         style: const TextStyle(fontSize: 14),
         onChanged: (value) {},
       );
+      SchedulerBinding.instance.scheduleFrameCallback((_) {
+        secondField.requestFocus();
+      });
       // coloun
       return Row(
         children: [
@@ -272,9 +283,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
           ),
           Flexible(
             flex: 1,
-            child: EasyShorcutsWidget(intentSet: {
-
-            }, child: textField),
+            child: textField.easyShortcuts(
+              intentSet:  {
+                LogicalKeySet(KeyCode.escape.logicalKey):
+                CustomIntentWithAction("esc", (context, intent) async {
+                  showSecondPanel.value = false;
+                  _keyBoardWidgetFsn.requestFocus();
+                }),
+              },
+            ),
           ),
         ],
       );
@@ -327,13 +344,14 @@ class _HomePageState extends State<HomePage> with WindowListener {
     });
   }
 
-  final FocusNode _searchFsn = FocusNode();
+  final FocusNode _searchFsn = FocusNode().apply((it) {
+    it.debugLabel = "search";
+  });
   final TextEditingController _searchController = TextEditingController();
 
   SliverToBoxAdapter buildSearchEditor() {
     var textField = TextField(
       controller: _searchController,
-      autofocus: true,
       onTap: () {
         _searchFsn.requestFocus();
       },
@@ -479,6 +497,10 @@ class _HomePageState extends State<HomePage> with WindowListener {
       LogicalKeySet(KeyCode.escape.logicalKey):
           CustomIntentWithAction("esc", (context, intent) async {
         onEscKeyDown();
+      }),
+      LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta, LogicalKeyboardKey.shift):
+      CustomIntentWithAction("meta+shift+d", (context, intent) async {
+        showSecondPanel.value = !showSecondPanel.value;
       }),
     };
   }
