@@ -191,6 +191,7 @@ class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
       },
       autofocus: true, // 没有这个 flutter 在 mac 端直接异常了, 起不来
       focusNode: (focusNode ?? FocusNode()).apply((p0) {
+        p0.skipTraversal= true; // FocusableActionDetector 自己不在 focus 变化序列里
         p0.onKeyEvent = this.onKeyEvent;
         p0.onKey = (FocusNode node, RawKeyEvent event){
           var res = onRawKeyEvent?.call(node, event) ?? KeyEventResult.ignored;

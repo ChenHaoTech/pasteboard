@@ -210,7 +210,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
     Widget child = CustomScrollView(
       controller: _scrollController,
       slivers: [
-        buildSearchEditor(),
         buildPasteboardHis(),
       ],
     );
@@ -235,6 +234,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
       child: child,
     );
     return Scaffold(
+      appBar: AppBar(
+        title: buildSearchEditor(),
+        actions: [
+          buildPinWindowBtn(),
+          // buildCreateWindowBtn(),
+        ],
+      ),
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: Stack(
@@ -247,26 +253,36 @@ class _HomePageState extends State<HomePage> with WindowListener {
     ).easyShortcuts(
       intentSet: {
         LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
-        CustomIntentWithAction("meta_f", (context, intent) async {
+            CustomIntentWithAction("meta_f", (context, intent) async {
           _searchFsn.requestFocus();
+        }),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp):
+        CustomIntentWithAction("up", (context, intent) async {
+          var fsn = FocusScope.of(context).focusedChild;
+          fsn?.previousFocus();
+        }),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown):
+        CustomIntentWithAction("down", (context, intent) async {
+          var fsn = FocusScope.of(context).focusedChild;
+          fsn?.nextFocus();
         }),
       },
     );
   }
 
   var showSecondPanel = RxBool(false);
+  var secondField = FocusNode().apply((it) {
+    it.debugLabel = "second panel";
+    it.skipTraversal = true;
+  });
 
   Widget _buildSecondPanel(Widget child) {
     return Obx(() {
       if (PasteboardItem.selectedItems.isEmpty && !showSecondPanel.value) {
         return child;
       }
-      var secondField = FocusNode().apply((it) {
-        it.debugLabel = "second panel";
-        it.skipTraversal = true;
-      });
       var res = PasteboardItem.selectedItems.map((it) => it.text).join("\n");
-      if(res.isEmpty){
+      if (res.isEmpty) {
         res = PasteboardItem.current?.text ?? "";
       }
       var textField = TextField(
@@ -278,9 +294,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
         style: const TextStyle(fontSize: 14),
         onChanged: (value) {},
       );
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        secondField.requestFocus();
-      });
       // coloun
       return Row(
         children: [
@@ -291,9 +304,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
           Flexible(
             flex: 1,
             child: textField.easyShortcuts(
-              intentSet:  {
+              intentSet: {
                 LogicalKeySet(KeyCode.escape.logicalKey):
-                CustomIntentWithAction("esc", (context, intent) async {
+                    CustomIntentWithAction("esc", (context, intent) async {
                   showSecondPanel.value = false;
                   //todo 交还焦点给上一个焦点
                   _searchFsn.requestFocus();
@@ -357,7 +370,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   });
   final TextEditingController _searchController = TextEditingController();
 
-  SliverToBoxAdapter buildSearchEditor() {
+  Widget buildSearchEditor() {
     var textField = TextField(
       controller: _searchController,
       onTap: () {
@@ -381,24 +394,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         // curFocusIdx = 0;
       },
     );
-    var container = Container(
-      padding: const EdgeInsets.only(left: 16, right: 16),
-      child: Row(
-        children: [
-          // 输入框, 搜索关键字
-          Expanded(
-            child: FocusableActionDetector(
-              child: textField,
-            ),
-          ),
-          // buildCreateWindowBtn(),
-          buildPinWindowBtn(),
-        ],
-      ),
-    );
-    return SliverToBoxAdapter(
-      child: container,
-    );
+    return textField;
   }
 
   IconButton buildPinWindowBtn() {
@@ -484,16 +480,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   Map<LogicalKeySet, CustomIntentWithAction> get metaIntentSet {
     return {
-      LogicalKeySet(LogicalKeyboardKey.arrowUp):
-          CustomIntentWithAction("up", (context, intent) async {
-        var fsn = FocusScope.of(context).focusedChild;
-        fsn?.previousFocus();
-      }),
-      LogicalKeySet(LogicalKeyboardKey.arrowDown):
-          CustomIntentWithAction("down", (context, intent) async {
-        var fsn = FocusScope.of(context).focusedChild;
-        fsn?.nextFocus();
-      }),
       LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("meta_c", (context, intent) async {
         onCopyKeyDown();
@@ -502,9 +488,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
           CustomIntentWithAction("esc", (context, intent) async {
         onEscKeyDown();
       }),
-      LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta, LogicalKeyboardKey.shift):
-      CustomIntentWithAction("meta+shift+d", (context, intent) async {
+      LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta,
+              LogicalKeyboardKey.shift):
+          CustomIntentWithAction("meta+shift+d", (context, intent) async {
         showSecondPanel.value = !showSecondPanel.value;
+        if (showSecondPanel.value) {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            secondField.requestFocus();
+          });
+        }
       }),
     };
   }
