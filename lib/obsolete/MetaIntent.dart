@@ -180,7 +180,7 @@ class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
         p0.onKeyEvent = this.onKeyEvent;
         p0.onKey = (FocusNode node, RawKeyEvent event){
           var res = onRawKeyEvent?.call(node, event) ?? KeyEventResult.ignored;
-          if (event.isMetaPressed && event.character != "") {
+          if (event.isMetaPressed && (event.character ?? "") != "") {
             // 很骚的解决方法
             Future.microtask(() => Get.find<HotKeySerice>().fixHotKeyBug());
           }

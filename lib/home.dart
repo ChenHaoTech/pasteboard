@@ -85,7 +85,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
-        await _requestWindowShow();
+        await windowService.requestWindowShow(
+          () async {
+            _scrollController.animateTo(0,
+                duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
+            _searchFsn.requestFocus();
+          },
+        );
       },
     );
   }
@@ -103,28 +109,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
     PasteUtils.doMultiCopy(list);
     EasyLoading.showSuccess("copy success,count:${list.length}");
     return;
-  }
-
-  Future<void> _requestWindowShow() async {
-    windowManager.show();
-    Offset position = await computePosition();
-    // screenRetriever.getAllDisplays().then((value) {
-    //   for (var element in value) {
-    //     print('id: ${element.id}');
-    //     print('dx: ${element.visiblePosition!.dx}');
-    //     print('dy: ${element.visiblePosition!.dy}');
-    //     print('width: ${element.size.width}');
-    //     print('height: ${element.size.height}');
-    //   }
-    // });
-    if (!await windowManager.isVisible()) {
-      windowManager.setPosition(position, animate: false);
-    }
-    await windowManager.focus();
-    _scrollController.animateTo(0,
-        duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
-    _searchFsn.requestFocus();
-    windowManager.setAlwaysOnTop(windowService.alwaysOnTop.value);
   }
 
   Future<void> bind1_9() async {
@@ -179,6 +163,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
             .contains(LogicalKeyboardKey.metaLeft) ||
         RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.metaRight);
   }
+  bool get isShiftPresssd {
+    return RawKeyboard.instance.keysPressed
+        .contains(LogicalKeyboardKey.shiftLeft) ||
+        RawKeyboard.instance.keysPressed.contains(
+            LogicalKeyboardKey.shiftRight);
+  }
 
   Future<Offset> computePosition() async {
     Offset position = await screenRetriever.getCursorScreenPoint();
@@ -208,7 +198,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
     hotKeyManager.onRawKeyEvent = null;
   }
 
-  final FocusNode _keyBoardWidgetFsn = FocusNode();
+  final FocusNode _keyBoardWidgetFsn = FocusNode().apply((it) {
+    it.debugLabel = "keyBoardWidgetFsn";
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +254,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       var textField = TextField(
         readOnly: true,
         focusNode: FocusNode().apply((it) {
+          it.debugLabel = "second panel";
           it.skipTraversal = true;
         }),
         controller: TextEditingController(text: res),
@@ -315,7 +308,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             ? Colors.deepPurple.shade300
             : Colors.deepPurple.shade50,
         onTap: () async {
-          if (isMetaPressed) {
+          if (isShiftPresssd || isMetaPressed) {
             item.selected.value = !(selected.value);
           } else {
             // 没有 cmd 直接粘贴

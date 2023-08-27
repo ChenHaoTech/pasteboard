@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
@@ -10,6 +11,13 @@ class WindowService extends GetxController {
   void onInit() {
     super.onInit();
     // space_test();
+  }
+
+  Future<void> requestWindowShow(Function? needDoOnWindowFocus) async {
+    windowManager.show();
+    await windowManager.focus();
+    needDoOnWindowFocus?.call();
+    windowManager.setAlwaysOnTop(alwaysOnTop.value);
   }
 
   Future<void> togglePin() async {
