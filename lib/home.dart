@@ -494,7 +494,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
         showSecondPanel.value = !showSecondPanel.value;
         if (showSecondPanel.value) {
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            secondField.requestFocus();
+            if(showSecondPanel.value)
+              secondField.requestFocus();
           });
         }
       }),
