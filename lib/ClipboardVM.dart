@@ -18,7 +18,6 @@ class ClipboardVM extends GetxController with ClipboardListener {
   final pasteboardItems = RxList<PasteboardItem>();
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
   final searchKey = RxString("");
-  final alwaysOnTop = RxBool(false);
   final lastClipTxt = RxString("");
 
   var editMarkdownContext = "";

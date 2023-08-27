@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
+import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:get/get.dart';
 
 /**
@@ -17,6 +18,7 @@ class MarkdownPage extends StatefulWidget {
 
 class MarkdownPageState extends State<MarkdownPage> {
   final ClipboardVM clipboardVM = Get.find<ClipboardVM>();
+  final WindowService windowService = Get.find<WindowService>();
 
   late TextEditingController textController;
   late StreamSubscription sub;
@@ -26,7 +28,8 @@ class MarkdownPageState extends State<MarkdownPage> {
     super.initState();
     textController =
         TextEditingController(text: clipboardVM.editMarkdownContext);
-    sub = clipboardVM.lastClipTxt.listen((p0) {
+    sub = clipboardVM.lastClipTxt.listen((p0) async {
+      if (await windowService.isFocus()) return;
       var origin = textController.text;
       var selection = textController.selection;
       var insertPos = selection.extentOffset;
@@ -82,9 +85,9 @@ class MarkdownPageState extends State<MarkdownPage> {
         ),
         actions: [
           IconButton(onPressed: () {
-            clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
+            windowService.alwaysOnTop.value = !windowService.alwaysOnTop.value;
           }, icon: Obx(() {
-            return Icon(clipboardVM.alwaysOnTop.value
+            return Icon(windowService.alwaysOnTop.value
                 ? Icons.push_pin
                 : Icons.push_pin_outlined);
           })),

@@ -32,6 +32,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WindowListener {
   late ScrollController _scrollController;
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
+  final WindowService windowService = Get.find<WindowService>();
 
   final HotKey _hotKey = HotKey(
     KeyCode.keyV,
@@ -123,7 +124,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     _scrollController.animateTo(0,
         duration: const Duration(milliseconds: 30), curve: Curves.easeOut);
     _searchFsn.requestFocus();
-    windowManager.setAlwaysOnTop(clipboardVM.alwaysOnTop.value);
+    windowManager.setAlwaysOnTop(windowService.alwaysOnTop.value);
   }
 
   Future<void> bind1_9() async {
@@ -162,7 +163,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
-            if(clipboardVM.alwaysOnTop.value){
+            if(windowService.alwaysOnTop.value){
               windowManager.focus();
             }
             return;
@@ -322,7 +323,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             await tryHideWindow(mustHide: true);
             await task;
             await PasteUtils.doPaste(item);
-            if(clipboardVM.alwaysOnTop.value){
+            if(windowService.alwaysOnTop.value){
               windowManager.focus();
             }
           }
@@ -387,7 +388,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
           Get.find<WindowService>().togglePin();
         },
         icon: Obx(() {
-          var isTop = clipboardVM.alwaysOnTop.value;
+          var isTop = windowService.alwaysOnTop.value;
           return isTop
               ? const Icon(Icons.push_pin)
               : const Icon(Icons.push_pin_outlined);
@@ -430,17 +431,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
     // clearKeyPress();
   }
 
-  void clearKeyPress() {
-    print("hint clearKeyPress");
-    RawKeyboard.instance.clearKeysPressed();
-    // // ignore: invalid_use_of_visible_for_testing_member
-    // HardwareKeyboard.instance.clearState();
-    // // ignore: invalid_use_of_visible_for_testing_member
-    // ServicesBinding.instance.keyEventManager.clearState();
-  }
-
   Future<void> tryHideWindow({bool mustHide = false}) async {
-    if (!mustHide && clipboardVM.alwaysOnTop.value) {
+    if (!mustHide && windowService.alwaysOnTop.value) {
       await windowManager.blur();
     } else {
       await windowManager.hide();
@@ -528,7 +520,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       }
       return;
     }
-    if (clipboardVM.alwaysOnTop.value) {
+    if (windowService.alwaysOnTop.value) {
       windowManager.blur();
     } else {
       tryHideWindow();

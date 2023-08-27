@@ -4,6 +4,7 @@ import 'package:window_manager/window_manager.dart';
 
 class WindowService extends GetxController {
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
+  final alwaysOnTop = RxBool(false);
 
   @override
   void onInit() {
@@ -12,8 +13,12 @@ class WindowService extends GetxController {
   }
 
   Future<void> togglePin() async {
-    await windowManager.setAlwaysOnTop(!clipboardVM.alwaysOnTop.value);
-    clipboardVM.alwaysOnTop.value = !clipboardVM.alwaysOnTop.value;
+    await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
+    alwaysOnTop.value = !alwaysOnTop.value;
+  }
+
+   Future<bool> isFocus() async {
+     return await windowManager.isFocused();
   }
   ignoreKey(){
     print("windowManager.invokeMethod;");
