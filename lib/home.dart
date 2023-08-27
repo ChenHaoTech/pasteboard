@@ -259,6 +259,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         LogicalKeySet(LogicalKeyboardKey.arrowUp):
         CustomIntentWithAction("up", (context, intent) async {
           var fsn = FocusScope.of(context).focusedChild;
+          if (fsn == _searchFsn) return;
           fsn?.previousFocus();
         }),
         LogicalKeySet(LogicalKeyboardKey.arrowDown):
