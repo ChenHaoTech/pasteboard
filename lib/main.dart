@@ -17,15 +17,17 @@ import 'main_tomoto.dart';
 
 void main(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
-    final windowId = int.parse(args[1]);
-    final argument = args[2].isEmpty
-        ? const {}
-        : jsonDecode(args[2]) as Map<String, dynamic>;
-    runApp(ExampleSubWindow(
-      windowController: WindowController.fromWindowId(windowId),
-      args: argument,
-    ));
-    return;
+    switch(args[2]){
+      case 'markdown':
+        runApp(MarkdownPage());
+        break;
+      case "tomoto":
+        // onMainArgsNewWindow(args);
+        break;
+      default:
+        // throw UnimplementedError("args:${args}");
+        return;
+    }
   }
 
   WidgetsFlutterBinding.ensureInitialized();

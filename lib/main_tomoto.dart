@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -21,8 +23,7 @@ openAudio() {
   // 播放时 按下暂停
   if (state == PlayerState.playing) {
     audioPlayer.pause();
-    timer.cancel();
-    systemTray.setTitle("");
+    restore();
   } else if (state == PlayerState.stopped ||
       state == PlayerState.completed ||
       state == PlayerState.disposed) {
@@ -37,6 +38,11 @@ openAudio() {
     beginTime = DateTime.now();
     startTimer();
   }
+}
+
+void restore() {
+  timer.cancel();
+  systemTray.setTitle("");
 }
 
 DateTime beginTime = DateTime.now();
@@ -59,9 +65,31 @@ startTimer() {
     var diff = stopTime.difference(DateTime.now());
     // 和当前时间相比 过去了多久
     systemTray.setTitle(formatDuration(diff));
+
+    if (diff.isNegative) {
+      restore();
+      showEndNotification();
+    }
   });
 }
+void onMainArgsNewWindow(int windowId,String type,Map<String,String> args){
+  WindowData.build(windowId, type, args);
+  runApp(TomotoWin());
+}
 
+
+void showEndNotification() async {
+  //todo 做一个封装
+  final window = await DesktopMultiWindow.createWindow(jsonEncode({
+    'args1': 'tomoto',
+  }));
+  window
+    ..setFrame(const Offset(0, 0) & const Size(1280, 720))
+    ..center()
+    ..setTitle('Another window')
+    ..resizable(false)
+    ..show();
+}
 final SystemTray systemTray = SystemTray();
 
 Future<void> initSystemTray() async {
@@ -118,7 +146,7 @@ void main(List<String> args) async {
   // windowManager.setResizable(true);
   // windowManager.setVisibleOnAllWorkspaces(false);
   // Get.put(ClipboardVM());
-  runApp(const MyApp());
+  runApp(const TomotoWin());
   // configLoading();
 }
 
@@ -130,7 +158,7 @@ Future<void> tomotoBinding() async {
     KeyCode.keyP,
     modifiers: [
       KeyModifier.control,
-      KeyModifier.shift,
+      // KeyModifier.shift,
       KeyModifier.alt,
       KeyModifier.meta,
     ],
@@ -143,9 +171,39 @@ Future<void> tomotoBinding() async {
     openAudio();
   });
 }
+class WindowData{
+  late String type;
+  int? id;
+  late String title;
+  late Map<String,String> data;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  WindowData(this.type, this.title, this.data);
+  //toMap
+  Map<String,String> toMap(){
+    return {
+      "type":type,
+      "id":id.toString(),
+      "title":title,
+      ...data
+    };
+  }
+
+  WindowData.build(int windowId, this.type, Map<String, String> args){
+    id = windowId;
+    title = args.remove("title") ?? "";
+    data = args;
+  }
+}
+
+abstract class WindowWidget extends StatelessWidget{
+  final WindowController windowController;
+  final WindowData data;
+
+  const WindowWidget(this.windowController, this.data);
+}
+
+class TomotoWin extends StatelessWidget {
+  const TomotoWin({super.key});
 
   // This widget is the root of your application.
   @override
