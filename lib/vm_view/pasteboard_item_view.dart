@@ -83,17 +83,15 @@ class PasteboardItemView extends StatelessWidget {
     return  Row(
           children: [
             Expanded(
-              child: Obx(() {
-                return Text(
-                  // 文字
-                  item.text!,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontSize: 13),
-                );
-              }),
+              child: Text(
+                // 文字
+                item.text!,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 13),
+              ),
             ),
             Text(
               index < 9 ? "cmd+${index + 1}" : "",

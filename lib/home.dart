@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/utils/PasteUtils.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
@@ -377,7 +376,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
         // curFocusIdx = 0;
       },
     );
-    return textField;
+    return textField.easyShortcuts(
+      intentSet: {
+        LogicalKeySet(KeyCode.arrowDown.logicalKey):
+            CustomIntentWithAction("down", (context, intent) async {
+          var fsn = FocusScope.of(context).focusedChild;
+          fsn?.nextFocus();
+        }),
+      }
+    );
   }
 
   IconButton buildPinWindowBtn() {
