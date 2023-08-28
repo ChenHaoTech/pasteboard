@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
-        await windowService.requestWindowShow(
+        await windowService.requestWindowShow( needDoOnWindowFocus:
           () async {
             _scrollController.animateTo(0,
                 duration: const Duration(milliseconds: 30),

@@ -11,13 +11,23 @@ class WindowService extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    windowHide.listen((p0) {
+      if(p0) {
+        windowManager.hide();
+      } else {
+        requestWindowShow();
+      }
+    });
     // space_test();
-    alwaysOnTop.listen((p0) {
+    alwaysOnTop.listen((p0) async{
       windowManager.setAlwaysOnTop(p0);
+      if (!p0 && await isFocus()) {
+        windowHide.value = true;
+      }
     });
   }
 
-  Future<void> requestWindowShow(Function? needDoOnWindowFocus) async {
+  Future<void> requestWindowShow({Function? needDoOnWindowFocus = null}) async {
     windowManager.show();
     await windowManager.focus();
     needDoOnWindowFocus?.call();
