@@ -308,13 +308,34 @@ class _HomePageState extends State<HomePage> with WindowListener {
       child: Obx(
         () {
           var data = clipboardVM.pasteboardItemsWithSearchKey;
-          return ListView.builder(
+          var listView = ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 return buildPasteboardItemView(index, data);
               });
+          return Focus(
+            skipTraversal: true,
+            child: listView,
+            onKey: (FocusNode node, RawKeyEvent event) {
+              // 模仿 maccy
+              // 匹配任意修饰键
+              // var motifyKeyIsPressed = event.isMetaPressed ||
+              //     event.isControlPressed ||
+              //     event.isAltPressed ||
+              //     event.isShiftPressed;
+              // // event.character 是 a-Z, 0-9 以内的 的字符
+              // var isCharacter = event.character != null &&
+              //     event.character!.isNotEmpty &&
+              //     event.character!.codeUnitAt(0) > 0x20;
+              // if (!motifyKeyIsPressed && isCharacter) {
+              //   _searchController.text += event.character ?? "";
+              //   return KeyEventResult.handled;
+              // }
+              return KeyEventResult.ignored;
+            },
+          ).easyShortcuts();
         },
       ),
     );
