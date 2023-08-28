@@ -89,19 +89,19 @@ class ClipboardVM extends GetxController with ClipboardListener {
   Future<PasteboardItem?> getTxtOrHtml() async {
     RichClipboardData rData = await RichClipboard.getData();
     PasteboardItem? targetItem;
-    // ClipboardData? newClipboardData =
-    //     await Clipboard.getData(Clipboard.kTextPlain);
-    if (rData.text != null && rData.text!.trim().isNotEmpty) {
+
+    // 优先富文本
+    if (rData.html != null && rData.html!.trim().isNotEmpty) {
+      String html = rData.html!.trim();
+      String sha256 = SHA256Util.calculateSHA256ForText(html);
+      targetItem = PasteboardItem(PasteboardItemType.html,
+          html: html,text: rData.text, sha256: sha256); // html
+    } else if (rData.text != null && rData.text!.trim().isNotEmpty) {
       //这里可以做 一些插件
       String text = rData.text!.trim();
       String sha256 = SHA256Util.calculateSHA256ForText(text);
       targetItem = PasteboardItem(PasteboardItemType.text,
           text: text, sha256: sha256); // 文字
-    } else if (rData.html != null && rData.html!.trim().isNotEmpty) {
-      String html = rData.html!.trim();
-      String sha256 = SHA256Util.calculateSHA256ForText(html);
-      targetItem = PasteboardItem(PasteboardItemType.html,
-          html: html, sha256: sha256); // html
     }
     lastClipTxt.value = targetItem?.text ?? (targetItem?.html ?? "");
     return targetItem;

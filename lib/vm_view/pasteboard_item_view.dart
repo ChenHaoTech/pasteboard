@@ -79,6 +79,29 @@ class PasteboardItemView extends StatelessWidget {
 
   Widget _getWidget(PasteboardItem item, BuildContext context) {
     hover.value = false;
+    if(item.type==PasteboardItemType.html){
+    return  Row(
+          children: [
+            Expanded(
+              child: Obx(() {
+                return Text(
+                  // 文字
+                  item.text!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 13),
+                );
+              }),
+            ),
+            Text(
+              index < 9 ? "cmd+${index + 1}" : "",
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ]);
+    }
+
     var text = item.text;
     if (item.type == PasteboardItemType.text && text != null) {
       var maxLine = 3;
