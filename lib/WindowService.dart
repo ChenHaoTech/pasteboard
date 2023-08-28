@@ -6,11 +6,15 @@ import 'package:window_manager/window_manager.dart';
 class WindowService extends GetxController {
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
   final alwaysOnTop = RxBool(false);
+  final windowHide = RxBool(false);
 
   @override
   void onInit() {
     super.onInit();
     // space_test();
+    alwaysOnTop.listen((p0) {
+      windowManager.setAlwaysOnTop(p0);
+    });
   }
 
   Future<void> requestWindowShow(Function? needDoOnWindowFocus) async {
@@ -18,11 +22,6 @@ class WindowService extends GetxController {
     await windowManager.focus();
     needDoOnWindowFocus?.call();
     windowManager.setAlwaysOnTop(alwaysOnTop.value);
-  }
-
-  Future<void> togglePin() async {
-    await windowManager.setAlwaysOnTop(!alwaysOnTop.value);
-    alwaysOnTop.value = !alwaysOnTop.value;
   }
 
    Future<bool> isFocus() async {

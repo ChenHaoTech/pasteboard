@@ -40,7 +40,7 @@ class HotKeySerice extends GetxController {
         HotKey(KeyCode.keyP,
             modifiers: [KeyModifier.meta],
             scope: HotKeyScope.inapp), keyDownHandler: (hotKey) {
-      Get.find<WindowService>().togglePin();
+      Get.find<WindowService>().alwaysOnTop.toggle();
     });
   }
 

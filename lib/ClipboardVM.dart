@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'database_helper.dart';
 

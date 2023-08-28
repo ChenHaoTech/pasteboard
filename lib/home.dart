@@ -252,21 +252,26 @@ class _HomePageState extends State<HomePage> with WindowListener {
       ),
     ).easyShortcuts(
       intentSet: {
+        LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta,
+            LogicalKeyboardKey.shift):
+        CustomIntentWithAction("meta+shift+d", (context, intent) async {
+          showSecondPanel.value = !showSecondPanel.value;
+          if (showSecondPanel.value) {
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (showSecondPanel.value) {
+                secondField.requestFocus();
+              }
+            });
+          }
+        }),
         LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
             CustomIntentWithAction("meta_f", (context, intent) async {
           _searchFsn.requestFocus();
         }),
-        LogicalKeySet(LogicalKeyboardKey.arrowUp):
-        CustomIntentWithAction("up", (context, intent) async {
-          var fsn = FocusScope.of(context).focusedChild;
-          if (fsn == _searchFsn) return;
-          fsn?.previousFocus();
-        }),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown):
-        CustomIntentWithAction("down", (context, intent) async {
-          var fsn = FocusScope.of(context).focusedChild;
-          fsn?.nextFocus();
-        }),
+        LogicalKeySet(KeyCode.escape.logicalKey):
+            CustomIntentWithAction("esc", (context, intent) async {
+          onEscKeyDown();
+        })
       },
     );
   }
@@ -310,7 +315,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
                     CustomIntentWithAction("esc", (context, intent) async {
                   showSecondPanel.value = false;
                   //todo 交还焦点给上一个焦点
-                  _searchFsn.requestFocus();
+
+                  secondField.unfocus();
                 }),
               },
             ),
@@ -403,7 +409,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         iconSize: 16,
         focusNode: FocusNode().apply((e) => e.skipTraversal = true),
         onPressed: () async {
-          Get.find<WindowService>().togglePin();
+          Get.find<WindowService>().alwaysOnTop.toggle();
         },
         icon: Obx(() {
           var isTop = windowService.alwaysOnTop.value;
@@ -485,20 +491,16 @@ class _HomePageState extends State<HomePage> with WindowListener {
           CustomIntentWithAction("meta_c", (context, intent) async {
         onCopyKeyDown();
       }),
-      LogicalKeySet(KeyCode.escape.logicalKey):
-          CustomIntentWithAction("esc", (context, intent) async {
-        onEscKeyDown();
+      LogicalKeySet(LogicalKeyboardKey.arrowUp):
+          CustomIntentWithAction("up", (context, intent) async {
+        var fsn = FocusScope.of(context).focusedChild;
+        if (fsn == _searchFsn) return;
+        fsn?.previousFocus();
       }),
-      LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta,
-              LogicalKeyboardKey.shift):
-          CustomIntentWithAction("meta+shift+d", (context, intent) async {
-        showSecondPanel.value = !showSecondPanel.value;
-        if (showSecondPanel.value) {
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            if(showSecondPanel.value)
-              secondField.requestFocus();
-          });
-        }
+      LogicalKeySet(LogicalKeyboardKey.arrowDown):
+          CustomIntentWithAction("down", (context, intent) async {
+        var fsn = FocusScope.of(context).focusedChild;
+        fsn?.nextFocus();
       }),
     };
   }

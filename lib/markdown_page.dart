@@ -6,6 +6,7 @@ import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 
 /**
  *
@@ -96,6 +97,13 @@ class MarkdownPageState extends State<MarkdownPage> {
         ],
       ),
       body: textField,
-    ).easyShortcuts();
+    ).easyShortcuts(
+      intentSet: {
+        LogicalKeySet(KeyCode.escape.logicalKey):
+          CustomIntentWithAction("esc", (context, intent) async {
+            windowService.windowHide;
+      })
+      }
+    );
   }
 }
