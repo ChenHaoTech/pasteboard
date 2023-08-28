@@ -8,6 +8,8 @@ import 'package:flutter_pasteboard/single_service.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:markdown_widget/markdown_widget.dart';
+
 
 /**
  *
@@ -69,6 +71,10 @@ class MarkdownPageState extends State<MarkdownPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 没有编辑功能
+    var md = const MarkdownWidget(
+      data: "clipboardVM.editMarkdownContext",
+    );
     var textField = TextField(
       autofocus: true,
       focusNode: _markdownEdit,

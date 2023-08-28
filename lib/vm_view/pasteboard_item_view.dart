@@ -100,33 +100,22 @@ class PasteboardItemView extends StatelessWidget {
           ]);
     }
 
-    var text = item.text;
-    if (item.type == PasteboardItemType.text && text != null) {
-      var maxLine = 3;
+    //todo 性能不够高啊
+    // 替换 换行符, 如果前后有空格的 也换掉
+    var text = item.text!.replaceAll("\n", " ").replaceAll("  ", " ");
+    if (item.type == PasteboardItemType.text) {
       return Row(
         children: [
           Expanded(
-            child: Obx(() {
-              var isHovering = hover.value;
-              if (isHovering && false) {
-                maxLine = 100;
-                // EasyLoading.showSuccess("maxLine: $maxLine");
-              } else {
-                var split = text!.split("\n");
-                text = split.length > maxLine
-                    ? "${split.sublist(0, maxLine).join("\n")}..."
-                    : text;
-              }
-              return Text(
-                // 文字
-                text!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontSize: 13),
-              );
-            }),
+            child: Text(
+              // 文字
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontSize: 13),
+            ),
           ),
           Text(
             index < 9 ? "cmd+${index + 1}" : "",
