@@ -19,6 +19,7 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'obsolete/MetaIntent.dart';
+import 'single_service.dart';
 import 'vm_view/pasteboard_item_view.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,25 +33,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WindowListener {
   late ScrollController _scrollController;
-  late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
-  final WindowService windowService = Get.find<WindowService>();
-
-  final HotKey _hotKey = HotKey(
-    KeyCode.keyV,
-    modifiers: [
-      KeyModifier.meta,
-      KeyModifier.alt,
-      KeyModifier.control,
-      KeyModifier.shift
-    ],
-    // Set hotkey scope (default is HotKeyScope.system)
-    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
-  );
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    windowService.autoFocusOnWindowShow = _searchFsn;
     bindHotKey();
     windowManager.addListener(this);
   }
@@ -81,19 +69,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
       ),
       keyDownHandler: (hotKey) async {
         tryHideWindow(mustHide: true);
-      },
-    );
-    hotKeyManager.register(
-      _hotKey,
-      keyDownHandler: (hotKey) async {
-        await windowService.requestWindowShow( needDoOnWindowFocus:
-          () async {
-            _scrollController.animateTo(0,
-                duration: const Duration(milliseconds: 30),
-                curve: Curves.easeOut);
-            _searchFsn.requestFocus();
-          },
-        );
       },
     );
   }
@@ -199,6 +174,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     super.dispose();
     clipboardWatcher.stop();
     hotKeyManager.onRawKeyEvent = null;
+    windowService.autoFocusOnWindowShow = null;
   }
 
   final FocusNode _keyBoardWidgetFsn = FocusNode().apply((it) {

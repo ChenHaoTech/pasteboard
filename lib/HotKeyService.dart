@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
+import 'package:flutter_pasteboard/single_service.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
@@ -16,6 +17,27 @@ class HotKeySerice extends GetxController {
     super.onInit();
     // space_test();
     bindRouteHotKey();
+    bindGlobalKey();
+  }
+  final HotKey _hotKey = HotKey(
+    KeyCode.keyV,
+    modifiers: [
+      KeyModifier.meta,
+      KeyModifier.alt,
+      KeyModifier.control,
+      KeyModifier.shift
+    ],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+  );
+
+  void bindGlobalKey(){
+    hotKeyManager.register(
+      _hotKey,
+      keyDownHandler: (hotKey) async {
+        await windowService.requestWindowShow();
+      },
+    );
   }
 
   /*试试 看  fn 等键的绑定? */

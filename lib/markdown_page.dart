@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
+import 'package:flutter_pasteboard/single_service.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -20,15 +21,14 @@ class MarkdownPage extends StatefulWidget {
 }
 
 class MarkdownPageState extends State<MarkdownPage> {
-  final ClipboardVM clipboardVM = Get.find<ClipboardVM>();
-  final WindowService windowService = Get.find<WindowService>();
-
   late TextEditingController textController;
   late StreamSubscription sub;
 
   @override
   void initState() {
     super.initState();
+    windowService.autoFocusOnWindowShow = _markdownEdit;
+    _markdownEdit.requestFocus();
     textController =
         TextEditingController(text: clipboardVM.editMarkdownContext);
     sub = clipboardVM.lastClipTxt.listen((p0) async {
@@ -46,18 +46,32 @@ class MarkdownPageState extends State<MarkdownPage> {
       textController.selection = TextSelection.fromPosition(
           TextPosition(offset: insertPos + p0.length));
     });
+    // todo 获取剪切板这一套 还不行 看看 biyi
+    // hotKeyManager.register(
+    //     HotKey(KeyCode.keyC, modifiers: [KeyModifier.meta, KeyModifier.shift]),
+    //     keyDownHandler: (hotkey) async{
+    //       await keyPressSimulator.simulateCtrlCKeyPress();
+    //       print("await keyPressSimulator.simulateCtrlCKeyPress();");
+    //       Future.delayed(100.milliseconds,(){
+    //         windowService.requestWindowShow();
+    //       });
+    //     });
   }
 
   @override
   void dispose() {
     super.dispose();
     sub.cancel();
+    windowService.autoFocusOnWindowShow = null;
   }
+
+  final FocusNode _markdownEdit = FocusNode(debugLabel: "markdownEdit");
 
   @override
   Widget build(BuildContext context) {
     var textField = TextField(
       autofocus: true,
+      focusNode: _markdownEdit,
       controller: textController,
       decoration: InputDecoration(
           border: InputBorder.none,
@@ -97,13 +111,11 @@ class MarkdownPageState extends State<MarkdownPage> {
         ],
       ),
       body: textField,
-    ).easyShortcuts(
-      intentSet: {
-        LogicalKeySet(KeyCode.escape.logicalKey):
+    ).easyShortcuts(intentSet: {
+      LogicalKeySet(KeyCode.escape.logicalKey):
           CustomIntentWithAction("esc", (context, intent) async {
-            windowService.windowHide;
+        windowService.windowHide;
       })
-      }
-    );
+    });
   }
 }
