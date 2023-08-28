@@ -86,7 +86,7 @@ class PasteboardItemView extends StatelessWidget {
               child: Text(
                 // 文字
                 item.text!,
-                maxLines: 3,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
@@ -120,7 +120,7 @@ class PasteboardItemView extends StatelessWidget {
               return Text(
                 // 文字
                 text!,
-                maxLines: maxLine,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
