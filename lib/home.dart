@@ -40,6 +40,18 @@ class _HomePageState extends State<HomePage> with WindowListener {
     windowService.autoFocusOnWindowShow = _searchFsn;
     bindHotKey();
     windowManager.addListener(this);
+
+    showSecondPanel.listen((p0) {
+      if (p0) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          secondField.requestFocus();
+        });
+      }else{
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
+        });
+      }
+    });
   }
 
   void bindHotKey() async {
@@ -231,13 +243,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
             LogicalKeyboardKey.shift):
         CustomIntentWithAction("meta+shift+d", (context, intent) async {
           showSecondPanel.value = !showSecondPanel.value;
-          if (showSecondPanel.value) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (showSecondPanel.value) {
-                secondField.requestFocus();
-              }
-            });
-          }
         }),
         LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
             CustomIntentWithAction("meta_f", (context, intent) async {
@@ -289,9 +294,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
                 LogicalKeySet(KeyCode.escape.logicalKey):
                     CustomIntentWithAction("esc", (context, intent) async {
                   showSecondPanel.value = false;
-                  //todo 交还焦点给上一个焦点
-
-                  secondField.unfocus();
                 }),
               },
             ),
