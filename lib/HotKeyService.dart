@@ -36,6 +36,9 @@ class HotKeySerice extends GetxController {
       _hotKey,
       keyDownHandler: (hotKey) async {
         await windowService.requestWindowShow();
+        SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          fixHotKeyBug();
+        });
       },
     );
   }
