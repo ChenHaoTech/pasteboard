@@ -32,7 +32,31 @@ void main(List<String> args) async {
   }
   //设置为 true 将导致焦点发生变化时发生大量日志记录。
   // debugFocusChanges = true;
-
+  WidgetsFlutterBinding.ensureInitialized();
+  await hotKeyManager.unregisterAll();
+  await tomotoBinding();
+  // Must add this line.
+  await windowManager.ensureInitialized();
+  WindowOptions windowOptions = const WindowOptions(
+    size: Size(210 * 3, 350),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: true,
+    titleBarStyle: TitleBarStyle.hidden,
+    windowButtonVisibility: false,
+  );
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+  });
+  // windowManager.hide();
+  // windowManager.show();
+  windowManager.setMovable(true);
+  windowManager.setResizable(true);
+  windowManager.setVisibleOnAllWorkspaces(false);
+  Get.put(ClipboardVM());
+  Get.put(HotKeySerice());
+  Get.put(WindowService());
+  configLoading();
   var onError = FlutterError.onError; //先将 onerror 保存起来
   FlutterError.onError = (FlutterErrorDetails details) {
     onError?.call(details); //调用默认的onError
@@ -40,36 +64,16 @@ void main(List<String> args) async {
     //todo only 测试
     errorMsg.add(
         "${DateTime.now().toIso8601String()} ${details.exception} ${details.stack}");
-    hintError++;
+    // Future.delayed(1.seconds, () {
+    //   Get.to(FlutterErrorDetails(exception: details.exception, stack: details.stack));
+    // });
   };
-  runZoned(
+  runApp(const MyApp());
+
+  // 使用了 runZoned 数据库加载不了了
+  /*runZoned(
     () async {
-      WidgetsFlutterBinding.ensureInitialized();
-      await hotKeyManager.unregisterAll();
-      await tomotoBinding();
-      // Must add this line.
-      await windowManager.ensureInitialized();
-      WindowOptions windowOptions = const WindowOptions(
-        size: Size(210 * 3, 350),
-        center: true,
-        backgroundColor: Colors.transparent,
-        skipTaskbar: true,
-        titleBarStyle: TitleBarStyle.hidden,
-        windowButtonVisibility: false,
-      );
-      await windowManager.waitUntilReadyToShow(windowOptions, () async {
-        await windowManager.show();
-      });
-      // windowManager.hide();
-      // windowManager.show();
-      windowManager.setMovable(true);
-      windowManager.setResizable(true);
-      windowManager.setVisibleOnAllWorkspaces(false);
-      Get.put(ClipboardVM());
-      Get.put(HotKeySerice());
-      Get.put(WindowService());
-      configLoading();
-      return runApp(const MyApp());
+      return
     },
     zoneSpecification: ZoneSpecification(
       // 拦截print
@@ -87,7 +91,7 @@ void main(List<String> args) async {
         logger.e('${error.toString()} $stackTrace');
       },
     ),
-  );
+  );*/
 }
 
 //todo only 测试环境

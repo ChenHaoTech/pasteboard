@@ -484,11 +484,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
       updateStatusBarHint.value;
       var keys =
           RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
+      var widget=FocusManager.instance.primaryFocus?.context?.widget;
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
-        child: Text(
-          "$keys,${FocusScope.of(context).focusedChild?.context?.widget ?? ""}",
+        child: Text("$keys,${ widget?? ""}",
         ),
       );
     });

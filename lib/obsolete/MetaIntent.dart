@@ -198,7 +198,7 @@ class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
           var res = onRawKeyEvent?.call(node, event) ?? KeyEventResult.ignored;
           if (event.isMetaPressed && (event.character ?? "") != "") {
             //todo 还没修好
-            // Get.find<HotKeySerice>().fixHotKeyBug();
+            Get.find<HotKeySerice>().fixHotKeyBug();
           }
           return res;
         };
