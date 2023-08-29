@@ -347,16 +347,26 @@ class _HomePageState extends State<HomePage> with WindowListener {
     var item = data[index];
     return Obx(() {
       var selected = item.selected;
+      var focusNode = FocusNode();
       return PasteboardItemView(
         index: index,
         item: item,
+        focusNode : focusNode,
         // 选中了就深紫色 ,没有选中就正常色
         color: selected.value
             ? Colors.deepPurple.shade300
             : Colors.deepPurple.shade50,
         onTap: () async {
-          if (isShiftPresssd || isMetaPressed) {
+          if (isMetaPressed) {
             item.selected.value = !(selected.value);
+          }else if(isShiftPresssd){
+            var items=PasteboardItem.selectedItems;
+            items.forEach((e) {
+              e.selected.value = false;
+            });
+            items.clear();
+            focusNode.requestFocus();
+            showSecondPanel.value = true;
           } else {
             // 没有 cmd 直接粘贴
             var task = PasteUtils.doCopy(item);

@@ -12,9 +12,10 @@ class PasteboardItemView extends StatelessWidget {
     required this.index,
     this.onTap,
     this.onLongPress,
-    this.color,
+    this.color, this.focusNode,
   }) : super(key: key);
 
+  final FocusNode? focusNode;
 // default: item, button
   final int index;
   final Color? color;
@@ -51,8 +52,8 @@ class PasteboardItemView extends StatelessWidget {
           PasteboardItem.current = item;
         }
       },
-      focusNode: FocusNode().apply((p0) {
-        // p0.canRequestFocus = false;
+      focusNode: (focusNode ?? FocusNode()).apply((it) {
+        item.focusNode = it;
       }),
       onTap: onTap == null ? null : () => onTap!(),
       onHover: (hovering) {

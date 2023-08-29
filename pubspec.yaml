@@ -47,7 +47,7 @@ dependencies:
   logger:
   intl:
   popover: ^0.2.8+2
-  collection: ^1.18.0
+  collection:
   flutter_easyloading: ^3.0.5
   desktop_multi_window:
     path: package/desktop_multi_window

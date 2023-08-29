@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 enum PasteboardItemType {
@@ -9,6 +10,7 @@ enum PasteboardItemType {
   file,
 }
 class PasteboardItem {
+  FocusNode? focusNode;
   static PasteboardItem? current;
   static var selectedItems = RxList<PasteboardItem>();
   var selected = RxBool(false);
