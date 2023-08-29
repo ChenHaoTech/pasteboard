@@ -1,14 +1,12 @@
-import 'dart:convert';
+import 'dart:async';
 
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
-import 'package:flutter_pasteboard/sample/_ExampleMainWindow.dart';
-import 'package:flutter_pasteboard/utils/function.dart';
+import 'package:flutter_pasteboard/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -34,33 +32,67 @@ void main(List<String> args) async {
   }
   //设置为 true 将导致焦点发生变化时发生大量日志记录。
   // debugFocusChanges = true;
-  WidgetsFlutterBinding.ensureInitialized();
-  await hotKeyManager.unregisterAll();
-  await tomotoBinding();
-  // Must add this line.
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(210 * 3, 350),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: true,
-    titleBarStyle: TitleBarStyle.hidden,
-    windowButtonVisibility: false,
+
+  var onError = FlutterError.onError; //先将 onerror 保存起来
+  FlutterError.onError = (FlutterErrorDetails details) {
+    onError?.call(details); //调用默认的onError
+    // reportErrorAndLog(details); //上报
+    //todo only 测试
+    errorMsg.add(
+        "${DateTime.now().toIso8601String()} ${details.exception} ${details.stack}");
+    hintError++;
+  };
+  runZoned(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await hotKeyManager.unregisterAll();
+      await tomotoBinding();
+      // Must add this line.
+      await windowManager.ensureInitialized();
+      WindowOptions windowOptions = const WindowOptions(
+        size: Size(210 * 3, 350),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: true,
+        titleBarStyle: TitleBarStyle.hidden,
+        windowButtonVisibility: false,
+      );
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+      });
+      // windowManager.hide();
+      // windowManager.show();
+      windowManager.setMovable(true);
+      windowManager.setResizable(true);
+      windowManager.setVisibleOnAllWorkspaces(false);
+      Get.put(ClipboardVM());
+      Get.put(HotKeySerice());
+      Get.put(WindowService());
+      configLoading();
+      return runApp(const MyApp());
+    },
+    zoneSpecification: ZoneSpecification(
+      // 拦截print
+      print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+        // collectLog(line);
+        logger.i(line);
+      },
+      // 拦截未处理的异步错误
+      handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone,
+          Object error, StackTrace stackTrace) {
+        // reportErrorAndLog(details);
+        //todo only 测试
+        errorMsg.add("${error.toString()} $stackTrace");
+        hintError++;
+        logger.e('${error.toString()} $stackTrace');
+      },
+    ),
   );
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-  });
-  // windowManager.hide();
-  // windowManager.show();
-  windowManager.setMovable(true);
-  windowManager.setResizable(true);
-  windowManager.setVisibleOnAllWorkspaces(false);
-  Get.put(ClipboardVM());
-  Get.put(HotKeySerice());
-  Get.put(WindowService());
-  runApp(const MyApp());
-  configLoading();
 }
+
+//todo only 测试环境
+var errorMsg = [];
+var hintError = 0.obs;
 
 void configLoading() {
   EasyLoading.instance
@@ -82,9 +114,13 @@ void configLoading() {
 //todo 要想子界面 也接受对应的 action 和 shorcuts
 Map<LogicalKeySet, CustomIntentWithAction> get globalKeyIntent {
   return {
-    LogicalKeySet(KeyCode.keyD.logicalKey,LogicalKeyboardKey.meta):
-    CustomIntentWithAction("esc_sldkj", (context, intent) async {
-      toast("msg");
+    LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control):
+        CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+      debugFocusChanges = !debugFocusChanges;
+    }),
+    LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control):
+        CustomIntentWithAction("toggle_focus_log", (context, intent) async {
+      print("fuck");
     }),
   };
 }
@@ -117,8 +153,24 @@ class MyApp extends StatelessWidget {
           name: '/markdown',
           page: () => MarkdownPage(),
         ),
+        GetPage(
+          name: '/errorMsg',
+          //todo only 测试
+          page: () => Scaffold(
+            body: ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+              return Text(errorMsg[index]);
+            }),
+          ),
+        ),
       ],
-      builder: EasyLoading.init(),
+      builder: (BuildContext context, Widget? child) {
+        EasyLoading.init();
+        hintError.listen((p0) {
+          Get.toNamed("errorMsg");
+        });
+        return FlutterEasyLoading(child: child);
+      }
     );
   }
 }

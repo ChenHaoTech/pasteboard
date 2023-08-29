@@ -38,15 +38,22 @@ class MarkdownPageState extends State<MarkdownPage> {
       var origin = textController.text;
       var selection = textController.selection;
       var insertPos = selection.extentOffset;
+      var needScrolltoBottom = false;
       if (insertPos <= 0 || insertPos >= origin.length) {
         insertPos = origin.length;
         p0 = "\n$p0";
+        needScrolltoBottom = true;
       }
       textController.text =
           "${origin.substring(0, insertPos)}$p0${origin.substring(insertPos)}";
-      print("controller.text = ${textController.text}");
-      textController.selection = TextSelection.fromPosition(
-          TextPosition(offset: insertPos + p0.length));
+
+      if(true){
+        await Future.delayed(100.milliseconds);
+        textController.selection = TextSelection.fromPosition(
+            TextPosition(offset: insertPos + p0.length));
+        // 到结尾
+        // _scrollController.jumpTo()
+      }
     });
     // todo 获取剪切板这一套 还不行 看看 biyi
     // hotKeyManager.register(
@@ -65,9 +72,11 @@ class MarkdownPageState extends State<MarkdownPage> {
     super.dispose();
     sub.cancel();
     windowService.autoFocusOnWindowShow = null;
+    _markdownEdit.dispose();
   }
 
   final FocusNode _markdownEdit = FocusNode(debugLabel: "markdownEdit");
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +85,7 @@ class MarkdownPageState extends State<MarkdownPage> {
       data: "clipboardVM.editMarkdownContext",
     );
     var textField = TextField(
+      scrollController: _scrollController,
       autofocus: true,
       focusNode: _markdownEdit,
       controller: textController,

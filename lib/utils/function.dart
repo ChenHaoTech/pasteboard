@@ -21,6 +21,18 @@ extension EasyShorcutsWidgetExt on Widget{
       child: this,
     );
   }
+
+  Widget easyTap(
+      {VoidCallback? onTap,
+      VoidCallback? onDoubleTap,
+      VoidCallback? onLongPress}) {
+    return GestureDetector(
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      onLongPress: onLongPress,
+      child: this,
+    );
+  }
 }
 
 // 对于字符串 强转的 工具 toIntOrNull toFloatOrNull 等

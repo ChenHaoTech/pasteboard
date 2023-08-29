@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
@@ -196,8 +197,8 @@ class MyFocusableActionWidget<T extends Intent> extends StatelessWidget {
         p0.onKey = (FocusNode node, RawKeyEvent event){
           var res = onRawKeyEvent?.call(node, event) ?? KeyEventResult.ignored;
           if (event.isMetaPressed && (event.character ?? "") != "") {
-            // 很骚的解决方法
-            Get.find<HotKeySerice>().fixHotKeyBug();
+            //todo 还没修好
+            // Get.find<HotKeySerice>().fixHotKeyBug();
           }
           return res;
         };

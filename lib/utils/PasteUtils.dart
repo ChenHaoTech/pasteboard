@@ -19,7 +19,8 @@ class PasteUtils {
     if (item.type == PasteboardItemType.text) {
       await Clipboard.setData(ClipboardData(text: item.text!));
     } else if (item.type == PasteboardItemType.html) {
-      await RichClipboard.setData(RichClipboardData(html: item.html!,text:item.text));
+      await RichClipboard.setData(
+          RichClipboardData(html: item.html ?? "", text: item.text));
     } else if (item.type == PasteboardItemType.image) {
       await Pasteboard.writeFiles([item.path!]);
     }

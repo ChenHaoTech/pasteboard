@@ -44,10 +44,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
     showSecondPanel.listen((p0) {
       if (p0) {
         SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (secondField.context?.mounted != true) return;
           secondField.requestFocus();
         });
       }else{
         SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (secondField.context?.mounted != true) return;
           secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
         });
       }
@@ -404,7 +406,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
         LogicalKeySet(KeyCode.arrowDown.logicalKey):
             CustomIntentWithAction("down", (context, intent) async {
           var fsn = FocusScope.of(context).focusedChild;
-          fsn?.nextFocus();
+          if (fsn?.context?.mounted == true) fsn?.nextFocus();
+          else fsn?.unfocus();
         }),
       }
     );
@@ -485,7 +488,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
         child: Text(
-          "$keys,${FocusScope.of(context).focusedChild?.context?.widget}",
+          "$keys,${FocusScope.of(context).focusedChild?.context?.widget ?? ""}",
         ),
       );
     });
@@ -506,7 +509,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
       LogicalKeySet(LogicalKeyboardKey.arrowDown):
           CustomIntentWithAction("down", (context, intent) async {
         var fsn = FocusScope.of(context).focusedChild;
-        fsn?.nextFocus();
+        if (fsn?.context?.mounted == true) fsn?.nextFocus();
+        else fsn?.unfocus();
       }),
     };
   }
