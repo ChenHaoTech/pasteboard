@@ -36,6 +36,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
   @override
   void initState() {
     super.initState();
+    FocusManager.instance.addListener(() {
+      updateStatusBarHint.value++;
+    });
     _scrollController = ScrollController();
     windowService.autoFocusOnWindowShow = _searchFsn;
     bindHotKey();
@@ -133,13 +136,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             event.isMetaPressed) {
           if (pasteboardItems.length > i) {
             var item = pasteboardItems[i];
-            var task = PasteUtils.doCopy(item);
-            await tryHideWindow(mustHide: true);
-            await task;
-            await PasteUtils.doPaste(item);
-            if (windowService.alwaysOnTop.value) {
-              windowManager.focus();
-            }
+            await _paste(item);
             return;
           }
         }
@@ -342,6 +339,16 @@ class _HomePageState extends State<HomePage> with WindowListener {
       ),
     );
   }
+  Future<void> _paste(PasteboardItem item) async {
+    // 没有 cmd 直接粘贴
+    var task = PasteUtils.doCopy(item);
+    await tryHideWindow(mustHide: true);
+    await task;
+    await PasteUtils.doPaste(item);
+    if (windowService.alwaysOnTop.value) {
+      windowManager.focus();
+    }
+  }
 
   Widget buildPasteboardItemView(int index, RxList<PasteboardItem> data) {
     var item = data[index];
@@ -359,6 +366,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         onTap: () async {
           if (isMetaPressed) {
             item.selected.value = !(selected.value);
+            focusNode.requestFocus();
           }else if(isShiftPresssd){
             var items=PasteboardItem.selectedItems;
             items.forEach((e) {
@@ -369,18 +377,25 @@ class _HomePageState extends State<HomePage> with WindowListener {
             showSecondPanel.value = true;
           } else {
             // 没有 cmd 直接粘贴
-            var task = PasteUtils.doCopy(item);
-            await tryHideWindow(mustHide: true);
-            await task;
-            await PasteUtils.doPaste(item);
-            if (windowService.alwaysOnTop.value) {
-              windowManager.focus();
-            }
+            await _paste(item);
           }
         },
+      ).easyShortcuts(
+        intentSet: {
+          LogicalKeySet(KeyCode.enter.logicalKey):
+          CustomIntentWithAction("enter", (context, intent) async {
+            await _paste(item);
+          }),
+          LogicalKeySet(KeyCode.enter.logicalKey,LogicalKeyboardKey.shift):
+          CustomIntentWithAction("shift_enter", (context, intent) async {
+            focusNode.requestFocus();
+            showSecondPanel.value = true;
+          }),
+        }
       );
     });
   }
+
 
   final FocusNode _searchFsn = FocusNode().apply((it) {
     it.debugLabel = "search";
@@ -415,9 +430,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
       intentSet: {
         LogicalKeySet(KeyCode.arrowDown.logicalKey):
             CustomIntentWithAction("down", (context, intent) async {
-          var fsn = FocusScope.of(context).focusedChild;
-          if (fsn?.context?.mounted == true) fsn?.nextFocus();
-          else fsn?.unfocus();
+              //todo 需要自定义下 focus traver 了
+          // var fsn = FocusScope.of(context).focusedChild;
+          clipboardVM.pasteboardItemsWithSearchKey[0].focusNode?.requestFocus();
         }),
       }
     );
@@ -494,10 +509,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
       updateStatusBarHint.value;
       var keys =
           RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
+      var focus = FocusManager.instance.primaryFocus;
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
-        child: Text("$keys",),
+        child: Text("$updateStatusBarHint, $keys ${focus?.context?.widget}"),
       );
     });
   }
@@ -517,8 +533,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       LogicalKeySet(LogicalKeyboardKey.arrowDown):
           CustomIntentWithAction("down", (context, intent) async {
         var fsn = FocusScope.of(context).focusedChild;
-        if (fsn?.context?.mounted == true) fsn?.nextFocus();
-        else fsn?.unfocus();
+        fsn?.nextFocus();
       }),
     };
   }

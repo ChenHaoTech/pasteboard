@@ -29,8 +29,13 @@ class PasteboardItemView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyFocusableActionWidget<CustomIntentWithAction>(
-      focusNode: FocusNode().apply((it) {
-        it.skipTraversal = true;
+      focusNode: focusNode.apply((it) {
+        item.focusNode = it;
+        it?.skipTraversal = true;
+        it?.addListener(() {
+          if (it.hasPrimaryFocus)
+            PasteboardItem.current = item;
+        });
       }),
       onAction: (CustomIntentWithAction intent, BuildContext context) {
         intent.func(context, intent);
@@ -47,14 +52,6 @@ class PasteboardItemView extends StatelessWidget {
 
   Container buildContainer(BuildContext context) {
     var inkWell = InkWell(
-      onFocusChange: (focus) {
-        if (focus) {
-          PasteboardItem.current = item;
-        }
-      },
-      focusNode: (focusNode ?? FocusNode()).apply((it) {
-        item.focusNode = it;
-      }),
       onTap: onTap == null ? null : () => onTap!(),
       onHover: (hovering) {
         hover.value = hovering;
