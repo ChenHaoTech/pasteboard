@@ -132,11 +132,14 @@ class _HomePageState extends State<HomePage> with WindowListener {
       var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
       for (int i = 0; i < digitKey.length; i++) {
         if (pressed.length == 2 &&
-            event.isKeyPressed(digitKey[i].logicalKey) &&
-            event.isMetaPressed) {
+            event.isKeyPressed(digitKey[i].logicalKey) ) {
           if (pasteboardItems.length > i) {
             var item = pasteboardItems[i];
-            await _paste(item);
+            if(event.isMetaPressed) {
+              await _paste(item);
+            } else if (event.isShiftPressed){
+              item.focusNode?.requestFocus();
+            }
             return;
           }
         }
