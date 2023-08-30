@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
           if (secondField.context?.mounted != true) return;
           secondField.requestFocus();
         });
-      }else{
+      } else {
         SchedulerBinding.instance.addPostFrameCallback((_) {
           if (secondField.context?.mounted != true) return;
           secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
@@ -90,9 +90,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> onCopyKeyDown() async {
-    var items = clipboardVM.pasteboardItemsWithSearchKey
-        .where((p0) => p0.selected.value)
-        .toList();
+    var items = clipboardVM.pasteboardItemsWithSearchKey.where((p0) => p0.selected.value).toList();
     var list = items.reversed.toList();
 
     if (list.isEmpty) {
@@ -131,13 +129,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
       var pressed = RawKeyboard.instance.keysPressed;
       var pasteboardItems = clipboardVM.pasteboardItemsWithSearchKey;
       for (int i = 0; i < digitKey.length; i++) {
-        if (pressed.length == 2 &&
-            event.isKeyPressed(digitKey[i].logicalKey) ) {
+        if (pressed.length == 2 && event.isKeyPressed(digitKey[i].logicalKey)) {
           if (pasteboardItems.length > i) {
             var item = pasteboardItems[i];
-            if(event.isMetaPressed) {
+            if (event.isMetaPressed) {
               await _paste(item);
-            } else if (event.isShiftPressed){
+            } else if (event.isShiftPressed) {
               item.focusNode?.requestFocus();
             }
             return;
@@ -149,16 +146,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   // 定义一个 isMetaPressed get
   bool get isMetaPressed {
-    return RawKeyboard.instance.keysPressed
-            .contains(LogicalKeyboardKey.metaLeft) ||
+    return RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.metaLeft) ||
         RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.metaRight);
   }
 
   bool get isShiftPresssd {
-    return RawKeyboard.instance.keysPressed
-            .contains(LogicalKeyboardKey.shiftLeft) ||
-        RawKeyboard.instance.keysPressed
-            .contains(LogicalKeyboardKey.shiftRight);
+    return RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
+        RawKeyboard.instance.keysPressed.contains(LogicalKeyboardKey.shiftRight);
   }
 
   Future<Offset> computePosition() async {
@@ -233,25 +227,18 @@ class _HomePageState extends State<HomePage> with WindowListener {
       // body: buildMetaIntentWidget(scrollView),
       // body: _test_buildKeyboardBindingWidget(scrollView),
       body: Stack(
-        children: [
-          _buildSecondPanel(child),
-          Positioned(
-              bottom: 10, child: SizedBox(height: 20, child: buildStatusBar()))
-        ],
+        children: [_buildSecondPanel(child), Positioned(bottom: 10, child: SizedBox(height: 20, child: buildStatusBar()))],
       ),
     ).easyShortcuts(
       intentSet: {
-        LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta,
-            LogicalKeyboardKey.shift):
-        CustomIntentWithAction("meta+shift+d", (context, intent) async {
+        LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta, LogicalKeyboardKey.shift):
+            CustomIntentWithAction("meta_shift_d", (context, intent) async {
           showSecondPanel.value = !showSecondPanel.value;
         }),
-        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta):
-            CustomIntentWithAction("meta_f", (context, intent) async {
+        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction("meta_f", (context, intent) async {
           _searchFsn.requestFocus();
         }),
-        LogicalKeySet(KeyCode.escape.logicalKey):
-            CustomIntentWithAction("esc", (context, intent) async {
+        LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction("esc", (context, intent) async {
           onEscKeyDown();
         })
       },
@@ -293,9 +280,21 @@ class _HomePageState extends State<HomePage> with WindowListener {
             flex: 1,
             child: textField.easyShortcuts(
               intentSet: {
-                LogicalKeySet(KeyCode.escape.logicalKey):
-                    CustomIntentWithAction("esc", (context, intent) async {
-                  showSecondPanel.value = false;
+                LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction("esc", (context, intent) async {
+                  var fsn = PasteboardItem.current.value?.focusNode;
+                  if (fsn != null) {
+                    fsn.requestFocus();
+                  } else {
+                    secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
+                  }
+                }),
+                LogicalKeySet(KeyCode.tab.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction("shift_tab", (context, intent) async {
+                  var fsn = PasteboardItem.current.value?.focusNode;
+                  if (fsn != null) {
+                    fsn.requestFocus();
+                  } else {
+                    secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
+                  }
                 }),
               },
             ),
@@ -322,6 +321,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       ),
     );
   }
+
   Future<void> _paste(PasteboardItem item) async {
     // 没有 cmd 直接粘贴
     var task = PasteUtils.doCopy(item);
@@ -341,17 +341,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
       return PasteboardItemView(
         index: index,
         item: item,
-        focusNode : focusNode,
+        focusNode: focusNode,
         // 选中了就深紫色 ,没有选中就正常色
-        color: selected.value
-            ? Colors.deepPurple.shade300
-            : Colors.deepPurple.shade50,
+        color: selected.value ? Colors.deepPurple.shade300 : Colors.deepPurple.shade50,
         onTap: () async {
           if (isMetaPressed) {
             item.selected.value = !(selected.value);
             focusNode.requestFocus();
-          }else if(isShiftPresssd){
-            var items=PasteboardItem.selectedItems;
+          } else if (isShiftPresssd) {
+            var items = PasteboardItem.selectedItems;
             items.forEach((e) {
               e.selected.value = false;
             });
@@ -363,22 +361,22 @@ class _HomePageState extends State<HomePage> with WindowListener {
             await _paste(item);
           }
         },
-      ).easyShortcuts(
-        intentSet: {
-          LogicalKeySet(KeyCode.enter.logicalKey):
-          CustomIntentWithAction("enter", (context, intent) async {
-             _paste(item);
-          }),
-          LogicalKeySet(KeyCode.enter.logicalKey,LogicalKeyboardKey.shift):
-          CustomIntentWithAction("shift_enter", (context, intent) async {
-            focusNode.requestFocus();
-            showSecondPanel.value = true;
-          }),
-        }
-      );
+      ).easyShortcuts(intentSet: {
+        LogicalKeySet(KeyCode.tab.logicalKey): CustomIntentWithAction("tab", (context, intent) async {
+          if (showSecondPanel.value) {
+            secondField.requestFocus();
+          }
+        }),
+        LogicalKeySet(KeyCode.enter.logicalKey): CustomIntentWithAction("enter", (context, intent) async {
+          _paste(item);
+        }),
+        LogicalKeySet(KeyCode.enter.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction("shift_enter", (context, intent) async {
+          focusNode.requestFocus();
+          showSecondPanel.value = true;
+        }),
+      });
     });
   }
-
 
   final FocusNode _searchFsn = FocusNode().apply((it) {
     it.debugLabel = "search";
@@ -409,14 +407,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
         // curFocusIdx = 0;
       },
     );
-    return textField.easyShortcuts(
-      intentSet: {
-        LogicalKeySet(KeyCode.arrowDown.logicalKey):
-            CustomIntentWithAction("down", (context, intent) async {
-          clipboardVM.pasteboardItemsWithSearchKey[0].focusNode?.requestFocus();
-        }),
-      }
-    );
+    return textField.easyShortcuts(intentSet: {
+      LogicalKeySet(KeyCode.arrowDown.logicalKey): CustomIntentWithAction("down", (context, intent) async {
+        clipboardVM.pasteboardItemsWithSearchKey[0].focusNode?.requestFocus();
+      }),
+    });
   }
 
   IconButton buildPinWindowBtn() {
@@ -428,9 +423,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         },
         icon: Obx(() {
           var isTop = windowService.alwaysOnTop.value;
-          return isTop
-              ? const Icon(Icons.push_pin)
-              : const Icon(Icons.push_pin_outlined);
+          return isTop ? const Icon(Icons.push_pin) : const Icon(Icons.push_pin_outlined);
         }));
   }
 
@@ -488,36 +481,31 @@ class _HomePageState extends State<HomePage> with WindowListener {
   Widget buildStatusBar() {
     return Obx(() {
       updateStatusBarHint.value;
-      var keys =
-          RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
+      var keys = RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
       var focus = FocusManager.instance.primaryFocus;
       // print(
       //     "[focus change] focus:${focus} \n child:${focus?.children} \nancestors: ${focus?.ancestors}\n descendants: ${focus?.descendants} \n parent : ${focus?.parent}\n");
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
-        child: Text(
-            "debug:${debugFocusChanges} $updateStatusBarHint, $keys ${focus?.context?.widget}, \ncur: ${PasteboardItem.current}"),
+        child: Text("debug:${debugFocusChanges} $updateStatusBarHint, $keys ${focus?.context?.widget}, \ncur: ${PasteboardItem.current}"),
       );
     });
   }
 
   Map<LogicalKeySet, CustomIntentWithAction> get metaIntentSet {
     return {
-      LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta):
-          CustomIntentWithAction("meta_c", (context, intent) async {
+      LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction("meta_c", (context, intent) async {
         onCopyKeyDown();
       }),
-      LogicalKeySet(LogicalKeyboardKey.arrowUp):
-          CustomIntentWithAction("up", (context, intent) async {
+      LogicalKeySet(LogicalKeyboardKey.arrowUp): CustomIntentWithAction("up", (context, intent) async {
         var fsn = FocusScope.of(context).focusedChild;
         if (fsn == _searchFsn) return;
         fsn?.previousFocus();
       }),
-      LogicalKeySet(LogicalKeyboardKey.arrowDown):
-          CustomIntentWithAction("down", (context, intent) async {
-            var fsn = FocusManager.instance.primaryFocus;
-            fsn?.focusInDirection(TraversalDirection.down);
+      LogicalKeySet(LogicalKeyboardKey.arrowDown): CustomIntentWithAction("down", (context, intent) async {
+        var fsn = FocusManager.instance.primaryFocus;
+        fsn?.focusInDirection(TraversalDirection.down);
       }),
     };
   }
