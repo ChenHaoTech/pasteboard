@@ -120,7 +120,8 @@ Map<LogicalKeySet, CustomIntentWithAction> get globalKeyIntent {
   return {
     LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control):
         CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
-      debugFocusChanges = !debugFocusChanges;
+      // debugFocusChanges = !debugFocusChanges;
+      debugDumpFocusTree();
     }),
     LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control):
         CustomIntentWithAction("toggle_focus_log", (context, intent) async {

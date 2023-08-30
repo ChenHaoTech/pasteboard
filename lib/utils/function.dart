@@ -12,12 +12,57 @@ extension MapExtension<T> on Iterable<T> {
 }
 
 // EasyShorcutsWidget 扩展 .shortcuts
-extension EasyShorcutsWidgetExt on Widget{
+extension EasyShorcutsWidgetExt on Widget {
   // .shortcuts
   Widget easyShortcuts(
       {Map<LogicalKeySet, CustomIntentWithAction>? intentSet}) {
     return EasyShorcutsWidget(
-      intentSet:  intentSet,
+      intentSet: intentSet,
+      child: this,
+    );
+  }
+
+  // Focus
+  Widget focus({
+    focusNode,
+    parentNode,
+    autofocus = false,
+    onFocusChange,
+    FocusOnKeyEventCallback? onKeyEvent,
+    FocusOnKeyCallback? onKey,
+    bool? canRequestFocus,
+    bool? skipTraversal,
+    bool? descendantsAreFocusable,
+    bool? descendantsAreTraversable,
+    includeSemantics = true,
+    String? debugLabel,
+  }) {
+    return Focus(
+        focusNode: focusNode,
+        parentNode: parentNode,
+        autofocus: autofocus,
+        onFocusChange: onFocusChange,
+        onKeyEvent: onKeyEvent,
+        onKey: onKey,
+        canRequestFocus: canRequestFocus,
+        skipTraversal: skipTraversal,
+        descendantsAreFocusable: descendantsAreFocusable,
+        descendantsAreTraversable: descendantsAreTraversable,
+        includeSemantics: includeSemantics,
+        debugLabel: debugLabel,
+        child: this);
+  }
+
+  // FocusTraversalGroup
+  Widget easyFocusTraversal({
+    FocusTraversalPolicy? policy,
+    descendantsAreFocusable = true,
+    descendantsAreTraversable = true,
+  }) {
+    return FocusTraversalGroup(
+      descendantsAreFocusable: descendantsAreFocusable,
+      policy: policy,
+      descendantsAreTraversable: descendantsAreTraversable,
       child: this,
     );
   }

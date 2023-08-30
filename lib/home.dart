@@ -317,27 +317,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
               itemBuilder: (context, index) {
                 return buildPasteboardItemView(index, data);
               });
-          return Focus(
-            skipTraversal: true,
-            child: listView,
-            onKey: (FocusNode node, RawKeyEvent event) {
-              // 模仿 maccy
-              // 匹配任意修饰键
-              // var motifyKeyIsPressed = event.isMetaPressed ||
-              //     event.isControlPressed ||
-              //     event.isAltPressed ||
-              //     event.isShiftPressed;
-              // // event.character 是 a-Z, 0-9 以内的 的字符
-              // var isCharacter = event.character != null &&
-              //     event.character!.isNotEmpty &&
-              //     event.character!.codeUnitAt(0) > 0x20;
-              // if (!motifyKeyIsPressed && isCharacter) {
-              //   _searchController.text += event.character ?? "";
-              //   return KeyEventResult.handled;
-              // }
-              return KeyEventResult.ignored;
-            },
-          ).easyShortcuts();
+          return listView.easyFocusTraversal();
         },
       ),
     );
@@ -357,7 +337,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     var item = data[index];
     return Obx(() {
       var selected = item.selected;
-      var focusNode = FocusNode();
+      var focusNode = FocusNode(debugLabel: "item$index");
       return PasteboardItemView(
         index: index,
         item: item,
@@ -433,8 +413,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
       intentSet: {
         LogicalKeySet(KeyCode.arrowDown.logicalKey):
             CustomIntentWithAction("down", (context, intent) async {
-              //todo 需要自定义下 focus traver 了
-          // var fsn = FocusScope.of(context).focusedChild;
           clipboardVM.pasteboardItemsWithSearchKey[0].focusNode?.requestFocus();
         }),
       }
@@ -513,10 +491,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
       var keys =
           RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
       var focus = FocusManager.instance.primaryFocus;
+      print(
+          "[focus change] focus:${focus} \n child:${focus?.children} \nancestors: ${focus?.ancestors}\n descendants: ${focus?.descendants} \n parent : ${focus?.parent}\n");
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
-        child: Text("$updateStatusBarHint, $keys ${focus?.context?.widget}"),
+        child: Text(
+            "debug:${debugFocusChanges} $updateStatusBarHint, $keys ${focus?.context?.widget}, cur: ${PasteboardItem.current}"),
       );
     });
   }
@@ -535,8 +516,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
       }),
       LogicalKeySet(LogicalKeyboardKey.arrowDown):
           CustomIntentWithAction("down", (context, intent) async {
-        var fsn = FocusScope.of(context).focusedChild;
-        fsn?.nextFocus();
+            var fsn = FocusManager.instance.primaryFocus;
+            fsn?.focusInDirection(TraversalDirection.down);
       }),
     };
   }
