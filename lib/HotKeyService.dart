@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/single_service.dart';
+import 'package:flutter_pasteboard/utils/PasteUtils.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
@@ -39,6 +40,24 @@ class HotKeySerice extends GetxController {
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           fixHotKeyBug();
         });
+      },
+    );
+    hotKeyManager.register(
+        HotKey(
+          KeyCode.keyV,
+          modifiers: [
+            KeyModifier.control,
+            KeyModifier.shift,
+          ],
+          // Set hotkey scope (default is HotKeyScope.system)
+          scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+        ),
+
+      keyDownHandler: (hotKey) async {
+        var item = clipboardVM.pasteboardItemsWithSearchKey[1];
+        var task = PasteUtils.doCopy(item);
+        await task;
+        await PasteUtils.doPaste(item);
       },
     );
   }

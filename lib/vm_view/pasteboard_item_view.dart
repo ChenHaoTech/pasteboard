@@ -49,7 +49,7 @@ class PasteboardItemView extends StatelessWidget {
         it?.descendantsAreTraversable = false;
         it?.descendantsAreFocusable = false;
         it?.addListener(() {
-          PasteboardItem.current = item;
+          PasteboardItem.current.value = item;
         });
       }),
       onTap: onTap == null ? null : () => onTap!(),

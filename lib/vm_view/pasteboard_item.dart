@@ -11,7 +11,7 @@ enum PasteboardItemType {
 }
 class PasteboardItem {
   FocusNode? focusNode;
-  static PasteboardItem? current;
+  static Rx<PasteboardItem?> current = Rx(null);
   static var selectedItems = RxList<PasteboardItem>();
   var selected = RxBool(false);
   int? id;

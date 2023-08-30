@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     var list = items.reversed.toList();
 
     if (list.isEmpty) {
-      list = PasteboardItem.current?.map((val) => [val]) ?? [];
+      list = PasteboardItem.current.value?.map((val) => [val]) ?? [];
     }
     // clearKeyPress();
     PasteUtils.doMultiCopy(list);
@@ -271,7 +271,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       }
       var res = PasteboardItem.selectedItems.map((it) => it.text).join("\n");
       if (res.isEmpty) {
-        res = PasteboardItem.current?.text ?? "";
+        res = PasteboardItem.current.value?.text ?? "";
       }
       var textField = TextField(
         autofocus: true,
@@ -367,7 +367,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
         intentSet: {
           LogicalKeySet(KeyCode.enter.logicalKey):
           CustomIntentWithAction("enter", (context, intent) async {
-            await _paste(item);
+             _paste(item);
           }),
           LogicalKeySet(KeyCode.enter.logicalKey,LogicalKeyboardKey.shift):
           CustomIntentWithAction("shift_enter", (context, intent) async {
@@ -491,13 +491,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
       var keys =
           RawKeyboard.instance.keysPressed.map((e) => e.keyLabel).join(",");
       var focus = FocusManager.instance.primaryFocus;
-      print(
-          "[focus change] focus:${focus} \n child:${focus?.children} \nancestors: ${focus?.ancestors}\n descendants: ${focus?.descendants} \n parent : ${focus?.parent}\n");
+      // print(
+      //     "[focus change] focus:${focus} \n child:${focus?.children} \nancestors: ${focus?.ancestors}\n descendants: ${focus?.descendants} \n parent : ${focus?.parent}\n");
       return Container(
         height: 10,
         color: Get.theme.scaffoldBackgroundColor,
         child: Text(
-            "debug:${debugFocusChanges} $updateStatusBarHint, $keys ${focus?.context?.widget}, cur: ${PasteboardItem.current}"),
+            "debug:${debugFocusChanges} $updateStatusBarHint, $keys ${focus?.context?.widget}, \ncur: ${PasteboardItem.current}"),
       );
     });
   }
