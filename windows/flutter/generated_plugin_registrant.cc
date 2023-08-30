@@ -8,6 +8,7 @@
 
 #include <audioplayers_windows/audioplayers_windows_plugin.h>
 #include <clipboard_watcher/clipboard_watcher_plugin.h>
+#include <desktop_context_menu_windows/desktop_context_menu_windows_plugin.h>
 #include <desktop_lifecycle/desktop_lifecycle_plugin.h>
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <hotkey_manager/hotkey_manager_plugin.h>
@@ -23,6 +24,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("AudioplayersWindowsPlugin"));
   ClipboardWatcherPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ClipboardWatcherPlugin"));
+  DesktopContextMenuWindowsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("DesktopContextMenuWindowsPlugin"));
   DesktopLifecyclePluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("DesktopLifecyclePlugin"));
   DesktopMultiWindowPluginRegisterWithRegistrar(

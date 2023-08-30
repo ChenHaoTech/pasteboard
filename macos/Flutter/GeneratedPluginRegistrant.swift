@@ -7,6 +7,7 @@ import Foundation
 
 import audioplayers_darwin
 import clipboard_watcher
+import desktop_context_menu_macos
 import desktop_lifecycle
 import desktop_multi_window
 import hotkey_manager
@@ -23,6 +24,7 @@ import window_manager
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
   ClipboardWatcherPlugin.register(with: registry.registrar(forPlugin: "ClipboardWatcherPlugin"))
+  DesktopContextMenuMacosPlugin.register(with: registry.registrar(forPlugin: "DesktopContextMenuMacosPlugin"))
   DesktopLifecyclePlugin.register(with: registry.registrar(forPlugin: "DesktopLifecyclePlugin"))
   FlutterMultiWindowPlugin.register(with: registry.registrar(forPlugin: "FlutterMultiWindowPlugin"))
   HotkeyManagerPlugin.register(with: registry.registrar(forPlugin: "HotkeyManagerPlugin"))
