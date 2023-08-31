@@ -36,7 +36,11 @@ class HotKeySerice extends GetxController {
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
-        await windowService.requestWindowShow();
+        if(await windowService.isFocus()){
+          await windowService.requestWindowHide();
+        }else{
+          await windowService.requestWindowShow();
+        }
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           fixHotKeyBug();
         });

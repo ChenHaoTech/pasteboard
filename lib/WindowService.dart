@@ -29,6 +29,10 @@ class WindowService extends GetxController {
     });
   }
 
+  Future<void> requestWindowHide() async {
+    await windowManager.hide();
+  }
+
   Future<void> requestWindowShow({Function? needDoOnWindowFocus = null}) async {
     windowManager.show();
     await windowManager.focus();
