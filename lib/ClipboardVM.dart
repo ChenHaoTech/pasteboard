@@ -17,7 +17,7 @@ class ClipboardVM extends GetxController with ClipboardListener {
   final pasteboardItems = RxList<PasteboardItem>();
   final pasteboardItemsWithSearchKey = RxList<PasteboardItem>();
   final searchKey = RxString("");
-  final lastClipTxt = RxString("");
+  final lastClip = Rx<PasteboardItem?>(null);
 
   var editMarkdownContext = "";
 
@@ -103,7 +103,7 @@ class ClipboardVM extends GetxController with ClipboardListener {
       targetItem = PasteboardItem(PasteboardItemType.text,
           text: text, sha256: sha256); // 文字
     }
-    lastClipTxt.value = targetItem?.text ?? (targetItem?.html ?? "");
+    lastClip.value = targetItem;
     return targetItem;
   }
 

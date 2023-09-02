@@ -9,6 +9,7 @@ import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:markdown_widget/markdown_widget.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 
 /**
@@ -33,24 +34,26 @@ class MarkdownPageState extends State<MarkdownPage> {
     _markdownEdit.requestFocus();
     textController =
         TextEditingController(text: clipboardVM.editMarkdownContext);
-    sub = clipboardVM.lastClipTxt.listen((p0) async {
+    sub = clipboardVM.lastClip.listen((p0) async {
       if (await windowService.isFocus()) return;
+      var context = p0?.html ?? p0?.text ?? "";
+      context = html2md.convert(context);
       var origin = textController.text;
       var selection = textController.selection;
       var insertPos = selection.extentOffset;
       var needScrolltoBottom = false;
       if (insertPos <= 0 || insertPos >= origin.length) {
         insertPos = origin.length;
-        p0 = "\n$p0";
+        context = "\n${context}";
         needScrolltoBottom = true;
       }
       textController.text =
-          "${origin.substring(0, insertPos)}$p0${origin.substring(insertPos)}";
+      "${origin.substring(0, insertPos)}$context${origin.substring(insertPos)}";
 
       if(true){
         await Future.delayed(100.milliseconds);
         textController.selection = TextSelection.fromPosition(
-            TextPosition(offset: insertPos + p0.length));
+            TextPosition(offset: insertPos + context.length));
         // 到结尾
         // _scrollController.jumpTo()
       }
