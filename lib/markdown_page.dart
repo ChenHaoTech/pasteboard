@@ -127,11 +127,6 @@ class MarkdownPageState extends State<MarkdownPage> {
         ],
       ),
       body: textField,
-    ).easyShortcuts(intentSet: {
-      LogicalKeySet(KeyCode.escape.logicalKey):
-          CustomIntentWithAction("esc", (context, intent) async {
-        windowService.windowHide;
-      })
-    });
+    );
   }
 }

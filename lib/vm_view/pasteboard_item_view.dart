@@ -28,18 +28,7 @@ class PasteboardItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MyFocusableActionWidget<CustomIntentWithAction>(
-      onAction: (CustomIntentWithAction intent, BuildContext context) {
-        intent.func(context, intent);
-      },
-      intentSet: {
-        LogicalKeySet(LogicalKeyboardKey.keyK, LogicalKeyboardKey.meta):
-            CustomIntentWithAction("meta_k", (context, intent) async {
-          toast("meta_k");
-        }),
-      },
-      child: buildContainer(context),
-    );
+    return buildContainer(context);
   }
 
   Container buildContainer(BuildContext context) {

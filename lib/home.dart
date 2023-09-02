@@ -216,6 +216,22 @@ class _HomePageState extends State<HomePage> with WindowListener {
       },
       child: child,
     );
+    // var region= ContextMenuRegion(
+    //   contextMenuBuilder: (BuildContext context, Offset offset) {
+    //     return _buildContent(context, offset, index);
+    //   },
+    //   contextMenuController: ContextMenuController(),
+    //   child: itemView,
+    // );
+    // return region.easyShortcuts(
+    //     intentSet: {
+    //       LogicalKeySet(KeyCode.keyK.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction("meta_k", (context, intent) async {
+    //         var primaryFocus = FocusManager.instance.primaryFocus;
+    //         var _c = primaryFocus?.context ?? context;
+    //         region.show(_c, offset: primaryFocus?.offset ?? Offset.zero);
+    //       }),
+    //     }
+    // );
     return Scaffold(
       appBar: AppBar(
         title: buildSearchEditor(),
@@ -320,6 +336,22 @@ class _HomePageState extends State<HomePage> with WindowListener {
         },
       ),
     );
+  }
+
+  Widget _buildContent(BuildContext context, Offset offset, int index) {
+    return AdaptiveTextSelectionToolbar.buttonItems(
+        anchors: TextSelectionToolbarAnchors(
+          primaryAnchor: offset,
+        ),
+        buttonItems: ['以此为基点进行重要性排序']
+            .map((label) => ContextMenuButtonItem(
+          onPressed: () {
+            ContextMenuController.removeAny();
+            Get.toNamed('/Pick');
+          },
+          label: label,
+        ))
+            .toList());
   }
 
   Future<void> _paste(PasteboardItem item) async {

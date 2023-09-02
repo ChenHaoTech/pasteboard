@@ -48,10 +48,10 @@ class HotKeySerice extends GetxController {
     );
     hotKeyManager.register(
         HotKey(
-          KeyCode.keyV,
+          KeyCode.keyC,
           modifiers: [
-            KeyModifier.control,
-            KeyModifier.shift,
+            KeyModifier.alt,
+            KeyModifier.meta,
           ],
           // Set hotkey scope (default is HotKeyScope.system)
           scope: HotKeyScope.system, // Set as inapp-wide hotkey.
@@ -59,9 +59,7 @@ class HotKeySerice extends GetxController {
 
       keyDownHandler: (hotKey) async {
         var item = clipboardVM.pasteboardItemsWithSearchKey[1];
-        var task = PasteUtils.doCopy(item);
-        await task;
-        await PasteUtils.doPaste(item);
+        PasteUtils.doCopy(item);
       },
     );
   }
