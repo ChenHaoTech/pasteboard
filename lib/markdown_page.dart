@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
@@ -35,28 +36,10 @@ class MarkdownPageState extends State<MarkdownPage> {
     textController =
         TextEditingController(text: clipboardVM.editMarkdownContext);
     sub = clipboardVM.lastClip.listen((p0) async {
-      if (await windowService.isFocus()) return;
+      if (await windowService.isFocus() || !windowService.alwaysOnTop.value) return;
       var context = p0?.html ?? p0?.text ?? "";
       context = html2md.convert(context);
-      var origin = textController.text;
-      var selection = textController.selection;
-      var insertPos = selection.extentOffset;
-      var needScrolltoBottom = false;
-      if (insertPos <= 0 || insertPos >= origin.length) {
-        insertPos = origin.length;
-        context = "\n${context}";
-        needScrolltoBottom = true;
-      }
-      textController.text =
-      "${origin.substring(0, insertPos)}$context${origin.substring(insertPos)}";
-
-      if(true){
-        await Future.delayed(100.milliseconds);
-        textController.selection = TextSelection.fromPosition(
-            TextPosition(offset: insertPos + context.length));
-        // 到结尾
-        // _scrollController.jumpTo()
-      }
+      insertContext(context);
     });
     // todo 获取剪切板这一套 还不行 看看 biyi
     // hotKeyManager.register(
@@ -68,6 +51,22 @@ class MarkdownPageState extends State<MarkdownPage> {
     //         windowService.requestWindowShow();
     //       });
     //     });
+  }
+
+  void insertContext(String context) {
+    var origin = textController.text;
+    var selection = textController.selection;
+    var insertPos = selection.extentOffset;
+    var needScrolltoBottom = false;
+    if (insertPos <= 0 || insertPos >= origin.length) {
+      insertPos = origin.length;
+      context = "\n${context}";
+      needScrolltoBottom = true;
+    }
+    textController.text =
+    "${origin.substring(0, insertPos)}$context${origin.substring(insertPos)}";
+    textController.selection = TextSelection.fromPosition(
+        TextPosition(offset: insertPos + context.length));
   }
 
   @override
@@ -129,7 +128,18 @@ class MarkdownPageState extends State<MarkdownPage> {
           })),
         ],
       ),
-      body: textField,
+      body: textField.easyShortcuts(
+        intentSet: {
+          LogicalKeySet(KeyCode.keyB.logicalKey, LogicalKeyboardKey.meta):
+          CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+            insertContext("****");
+          }),
+          LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
+          CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+            insertContext("- [ ] ");
+          })
+        }
+      ),
     );
   }
 }
