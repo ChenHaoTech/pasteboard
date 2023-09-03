@@ -53,7 +53,7 @@ class MarkdownPageState extends State<MarkdownPage> {
     //     });
   }
 
-  void insertContext(String context) {
+  void insertContext(String context, {int offset = 0}) {
     var origin = textController.text;
     var selection = textController.selection;
     var insertPos = selection.extentOffset;
@@ -66,7 +66,7 @@ class MarkdownPageState extends State<MarkdownPage> {
     textController.text =
     "${origin.substring(0, insertPos)}$context${origin.substring(insertPos)}";
     textController.selection = TextSelection.fromPosition(
-        TextPosition(offset: insertPos + context.length));
+        TextPosition(offset: insertPos + context.length + offset));
   }
 
   @override
@@ -132,7 +132,7 @@ class MarkdownPageState extends State<MarkdownPage> {
         intentSet: {
           LogicalKeySet(KeyCode.keyB.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
-            insertContext("****");
+            insertContext("****", offset: -2);
           }),
           LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
           CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
@@ -140,6 +140,8 @@ class MarkdownPageState extends State<MarkdownPage> {
           })
         }
       ),
+    ).easyTap(
+        onTap: () => _markdownEdit.requestFocus()
     );
   }
 }
