@@ -33,6 +33,7 @@ void main(List<String> args) async {
   //设置为 true 将导致焦点发生变化时发生大量日志记录。
   // debugFocusChanges = true;
   WidgetsFlutterBinding.ensureInitialized();
+  Get.deleteAll(force: true);
   await hotKeyManager.unregisterAll();
   await tomotoBinding();
   // Must add this line.

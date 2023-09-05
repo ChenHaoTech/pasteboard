@@ -9,7 +9,7 @@ import 'package:flutter_pasteboard/utils/PasteUtils.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HotKeySerice extends GetxController {
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
@@ -31,15 +31,27 @@ class HotKeySerice extends GetxController {
     // Set hotkey scope (default is HotKeyScope.system)
     scope: HotKeyScope.system, // Set as inapp-wide hotkey.
   );
+  var lastTs = 0;
 
   void bindGlobalKey(){
     hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
+        var curTs = DateTime.now().millisecondsSinceEpoch;
+        var hintDouble = false;
+        if ((curTs - lastTs) < 300) {
+          hintDouble  = true;
+        }
+        lastTs = curTs;
+
+
         if(await windowService.isFocus()){
           await windowService.requestWindowHide();
         }else{
           await windowService.requestWindowShow();
+        }
+        if (hintDouble) {
+          windowService.alwaysOnTop.toggle();
         }
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           fixHotKeyBug();
@@ -60,6 +72,15 @@ class HotKeySerice extends GetxController {
       keyDownHandler: (hotKey) async {
         var item = clipboardVM.pasteboardItemsWithSearchKey[1];
         PasteUtils.doCopy(item);
+        // global toast 临时解
+        /// final mailtoUri = Uri(
+        ///     scheme: 'mailto',
+        ///     path: 'John.Doe@example.com',
+        ///     queryParameters: {'subject': 'Example'});
+        /// print(mailtoUri); // mailto:John.Doe@example.com?subject=Example
+        var uri = Uri(scheme: "hammerspoon",path: "/toast",queryParameters: {"msg":"msg"});
+        print(uri);
+        launchUrl(uri);
       },
     );
   }
@@ -84,8 +105,7 @@ class HotKeySerice extends GetxController {
     // cmd + p togglePin
     hotKeyManager.register(
         HotKey(KeyCode.keyP,
-            modifiers: [KeyModifier.meta],
-            scope: HotKeyScope.inapp), keyDownHandler: (hotKey) {
+            modifiers: [KeyModifier.meta, KeyModifier.alt], scope: HotKeyScope.inapp), keyDownHandler: (hotKey) {
       Get.find<WindowService>().alwaysOnTop.toggle();
     });
   }

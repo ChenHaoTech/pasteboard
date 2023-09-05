@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
@@ -22,6 +23,11 @@ class WindowService extends GetxController {
     });
     // space_test();
     alwaysOnTop.listen((p0) async{
+      if(p0){
+        EasyLoading.showSuccess("📌PIN");
+      }else{
+        EasyLoading.showSuccess("UNPIN");
+      }
       windowManager.setAlwaysOnTop(p0);
       if (!p0 && await isFocus()) {
         windowHide.value = true;
