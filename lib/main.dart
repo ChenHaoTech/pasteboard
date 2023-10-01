@@ -34,29 +34,13 @@ void main(List<String> args) async {
   // debugFocusChanges = true;
   WidgetsFlutterBinding.ensureInitialized();
   Get.deleteAll(force: true);
-  await hotKeyManager.unregisterAll();
-  await tomotoBinding();
+  // await tomotoBinding();
   // Must add this line.
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(210 * 3, 350),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: true,
-    titleBarStyle: TitleBarStyle.hidden,
-    windowButtonVisibility: false,
-  );
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-  });
-  // windowManager.hide();
-  // windowManager.show();
-  windowManager.setMovable(true);
-  windowManager.setResizable(true);
-  windowManager.setVisibleOnAllWorkspaces(false);
   Get.put(ClipboardVM());
-  Get.put(HotKeySerice());
-  Get.put(WindowService());
+  if(GetPlatform.isDesktop){
+    Get.put(HotKeySerice());
+    Get.put(WindowService());
+  }
   configLoading();
   var onError = FlutterError.onError; //先将 onerror 保存起来
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -149,8 +133,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade50),
         useMaterial3: true,
       ),
-      home: const HomePage(title: 'Flutter Demo Home Page'),
-      getPages: [
+        home: const Center(
+          child: Text("fuck"),
+        ),
+        getPages: [
         GetPage(
           name: '/home',
           page: () => const Text("welcome"),
