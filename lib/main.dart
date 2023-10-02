@@ -4,6 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
+import 'package:flutter_siri_suggestions/flutter_siri_suggestions.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 
@@ -47,6 +48,7 @@ void main(List<String> args) async {
     // });
   };
   runApp(const MyApp());
+  configSiri();
 
   // 使用了 runZoned 数据库加载不了了
   /*runZoned(
@@ -75,6 +77,48 @@ void main(List<String> args) async {
 //todo only 测试环境
 var errorMsg = [];
 var hintError = 0.obs;
+
+
+void configSiri() async {
+  await FlutterSiriSuggestions.instance.registerActivity(
+      const FlutterSiriActivity(
+          "今天很开心",
+          "mainActivity",
+          isEligibleForSearch: true,
+          isEligibleForPrediction: true,
+          contentDescription: "Did you enjoy that?",
+          suggestedInvocationPhrase: "今天不开心"
+      )
+  );
+
+  FlutterSiriSuggestions.instance.configure(
+      onLaunch: (Map<String, dynamic> message) async {
+        // Awaken from Siri Suggestion
+        // message = {title: "Open App 👨‍💻", key: "mainActivity", userInfo: {}}
+        // Do what you want :)
+
+        print("called by ${message['key']} suggestion.");
+
+        switch (message["key"]) {
+          case "mainActivity":
+            __text.value = "redirect to mainActivity";
+            break;
+          case "beerActivity":
+            __text.value = "redirect to beerActivity";
+            break;
+          case "searchActivity":
+            __text.value = "redirect to searchActivity";
+            break;
+          case "talkActivity":
+            __text.value = "redirect to talkActivity";
+            break;
+          default:
+            __text.value = "hmmmm...... made a typo";
+        }
+      }
+  );
+}
+var __text = "fuck".obs;
 
 void configLoading() {
   EasyLoading.instance
@@ -123,8 +167,10 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade50),
           useMaterial3: true,
         ),
-        home: const Center(
-          child: Text("fuck"),
+        home: Center(
+          child: Obx(() {
+            return Text("${__text.value}");
+          })
         ),
         getPages: [
           GetPage(
