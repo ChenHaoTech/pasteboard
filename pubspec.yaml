@@ -39,6 +39,7 @@ dependencies:
     path: package/hotkey_manager
   get:
   screen_retriever: ^0.1.6
+  photo_album_manager: ^1.2.0
   keypress_simulator: ^0.1.0
   pasteboard:
     path: package/pasteboard

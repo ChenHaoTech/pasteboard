@@ -10,6 +10,7 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 
 import 'ClipboardVM.dart';
 import 'obsolete/MetaIntent.dart';
+import 'package:photo_album_manager/photo_album_manager.dart';
 
 void main(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
@@ -49,6 +50,7 @@ void main(List<String> args) async {
   };
   runApp(const MyApp());
   configSiri();
+  // touchAlbum();
 
   // 使用了 runZoned 数据库加载不了了
   /*runZoned(
@@ -78,6 +80,19 @@ void main(List<String> args) async {
 var errorMsg = [];
 var hintError = 0.obs;
 
+void touchAlbum()async
+{
+  //先权限申请
+  PermissionStatus status = await PhotoAlbumManager.checkPermissions();
+  if (status == PermissionStatus.granted) {
+    print("权限同意");
+  } else {
+    print("权限拒绝");
+  }
+//再获取相册资源
+  List<AlbumModelEntity> photos = await PhotoAlbumManager.getDescAlbum(maxCount: 5);
+  print("photos: ${photos.map((e) => "${e.creationDate}, ${e.thumbPath}").toList()}");
+}
 
 void configSiri() async {
   await FlutterSiriSuggestions.instance.registerActivity(
@@ -168,9 +183,12 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: Center(
-          child: Obx(() {
-            return Text("${__text.value}");
-          })
+          // child: Obx(() {
+          //   return Text("${__text.value}");
+          // })
+          child: ElevatedButton(child: Text("fuck"),onPressed: (){
+            touchAlbum();
+          },),
         ),
         getPages: [
           GetPage(
