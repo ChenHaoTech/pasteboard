@@ -2,15 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_pasteboard/ClipboardVM.dart';
-import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/single_service.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:markdown_widget/markdown_widget.dart';
 import 'package:html2md/html2md.dart' as html2md;
+import 'package:markdown_widget/markdown_widget.dart';
 
 
 /**

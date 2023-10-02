@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/utils/function.dart';
