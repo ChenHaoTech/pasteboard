@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
-import 'package:flutter_pasteboard/utils/function.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:get/get.dart';
 
 /*DEMO
@@ -74,7 +74,17 @@ final meta_9 = LogicalKeySet(
   LogicalKeyboardKey.meta, // Replace with control on Windows
   LogicalKeyboardKey.digit9,
 );
-
+// EasyShorcutsWidget 扩展 .shortcuts
+extension EasyShorcutsWidgetExt on Widget {
+  // .shortcuts
+  Widget easyShortcuts(
+      {Map<LogicalKeySet, CustomIntentWithAction>? intentSet}) {
+    return EasyShorcutsWidget(
+      intentSet: intentSet,
+      child: this,
+    );
+  }
+}
 // 实现一个绑定 meta_0 meta_9 的 widget, 暴露 一个 onMetaList 列表和 child
 // 通过 onMetaList 来绑定 meta_0 meta_9 的行为
 

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/single_service.dart';
-import 'package:flutter_pasteboard/utils/function.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:html2md/html2md.dart' as html2md;
