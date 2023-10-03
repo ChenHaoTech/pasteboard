@@ -41,6 +41,8 @@ dependencies:
   screen_retriever: ^0.1.6
   photo_album_manager: ^1.2.0
   keypress_simulator: ^0.1.0
+  h_foundation:
+    path: package/h_foundation
   pasteboard:
     path: package/pasteboard
   crypto: ^3.0.3
