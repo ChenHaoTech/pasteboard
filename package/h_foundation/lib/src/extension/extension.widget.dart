@@ -1,7 +1,36 @@
 // EasyShorcutsWidget 扩展 .shortcuts
 import 'package:flutter/widgets.dart';
+import 'package:h_foundation/src/extension/extension.obj.dart';
 
-extension EasyShorcutsWidgetExt on Widget {
+extension WidgetExt on Widget {
+  //Column
+  Widget Col({
+    key,
+    mainAxisAlignment,
+    required MainAxisSize mainAxisSize,
+    required CrossAxisAlignment crossAxisAlignment,
+    TextDirection? textDirection,
+    required VerticalDirection verticalDirection,
+    TextBaseline? textBaseline,
+    List<Widget>? children,
+  }) {
+    return Column(
+      mainAxisSize: mainAxisSize,
+      crossAxisAlignment: crossAxisAlignment,
+      textDirection: textDirection,
+      verticalDirection: verticalDirection,
+      textBaseline: textBaseline,
+      children: [this].apply((it) {
+        if(children!=null) it.addAll(children);
+      }),
+    );
+  }
+
+// center
+  Widget center() {
+    return Center(child: this);
+  }
+
   // Focus
   Widget focus({
     FocusNode? focusNode,

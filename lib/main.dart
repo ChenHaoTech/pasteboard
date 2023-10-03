@@ -6,10 +6,10 @@ import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
 import 'package:flutter_siri_suggestions/flutter_siri_suggestions.dart';
 import 'package:get/get.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 
 import 'ClipboardVM.dart';
-import 'obsolete/MetaIntent.dart';
 import 'package:photo_album_manager/photo_album_manager.dart';
 
 void main(List<String> args) async {
@@ -80,8 +80,7 @@ void main(List<String> args) async {
 var errorMsg = [];
 var hintError = 0.obs;
 
-void touchAlbum()async
-{
+void touchAlbum() async {
   //先权限申请
   PermissionStatus status = await PhotoAlbumManager.checkPermissions();
   if (status == PermissionStatus.granted) {
@@ -95,44 +94,35 @@ void touchAlbum()async
 }
 
 void configSiri() async {
-  await FlutterSiriSuggestions.instance.registerActivity(
-      const FlutterSiriActivity(
-          "今天很开心",
-          "mainActivity",
-          isEligibleForSearch: true,
-          isEligibleForPrediction: true,
-          contentDescription: "Did you enjoy that?",
-          suggestedInvocationPhrase: "今天不开心"
-      )
-  );
+  await FlutterSiriSuggestions.instance.registerActivity(const FlutterSiriActivity("今天很开心", "mainActivity",
+      isEligibleForSearch: true, isEligibleForPrediction: true, contentDescription: "Did you enjoy that?", suggestedInvocationPhrase: "今天不开心"));
 
-  FlutterSiriSuggestions.instance.configure(
-      onLaunch: (Map<String, dynamic> message) async {
-        // Awaken from Siri Suggestion
-        // message = {title: "Open App 👨‍💻", key: "mainActivity", userInfo: {}}
-        // Do what you want :)
+  FlutterSiriSuggestions.instance.configure(onLaunch: (Map<String, dynamic> message) async {
+    // Awaken from Siri Suggestion
+    // message = {title: "Open App 👨‍💻", key: "mainActivity", userInfo: {}}
+    // Do what you want :)
 
-        print("called by ${message['key']} suggestion.");
+    print("called by ${message['key']} suggestion.");
 
-        switch (message["key"]) {
-          case "mainActivity":
-            __text.value = "redirect to mainActivity";
-            break;
-          case "beerActivity":
-            __text.value = "redirect to beerActivity";
-            break;
-          case "searchActivity":
-            __text.value = "redirect to searchActivity";
-            break;
-          case "talkActivity":
-            __text.value = "redirect to talkActivity";
-            break;
-          default:
-            __text.value = "hmmmm...... made a typo";
-        }
-      }
-  );
+    switch (message["key"]) {
+      case "mainActivity":
+        __text.value = "redirect to mainActivity";
+        break;
+      case "beerActivity":
+        __text.value = "redirect to beerActivity";
+        break;
+      case "searchActivity":
+        __text.value = "redirect to searchActivity";
+        break;
+      case "talkActivity":
+        __text.value = "redirect to talkActivity";
+        break;
+      default:
+        __text.value = "hmmmm...... made a typo";
+    }
+  });
 }
+
 var __text = "fuck".obs;
 
 void configLoading() {
@@ -155,11 +145,11 @@ void configLoading() {
 //todo 要想子界面 也接受对应的 action 和 shorcuts
 Map<LogicalKeySet, CustomIntentWithAction> get globalKeyIntent {
   return {
-    LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+    LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction((context, intent) async {
       // debugFocusChanges = !debugFocusChanges;
       debugDumpFocusTree();
     }),
-    LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction("toggle_focus_log", (context, intent) async {
+    LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction((context, intent) async {
       print("fuck");
     }),
   };
@@ -186,9 +176,12 @@ class MyApp extends StatelessWidget {
           // child: Obx(() {
           //   return Text("${__text.value}");
           // })
-          child: ElevatedButton(child: Text("fuck"),onPressed: (){
-            touchAlbum();
-          },),
+          child: ElevatedButton(
+            child: Text("fuck"),
+            onPressed: () {
+              touchAlbum();
+            },
+          ),
         ),
         getPages: [
           GetPage(

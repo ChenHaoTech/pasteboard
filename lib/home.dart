@@ -10,14 +10,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/utils/PasteUtils.dart';
-import 'package:h_foundation/h_foundation.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'obsolete/MetaIntent.dart';
 import 'single_service.dart';
 import 'vm_view/pasteboard_item_view.dart';
 
@@ -248,13 +247,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
     ).easyShortcuts(
       intentSet: {
         LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.meta, LogicalKeyboardKey.shift):
-            CustomIntentWithAction("meta_shift_d", (context, intent) async {
+            CustomIntentWithAction((context, intent) async {
           showSecondPanel.value = !showSecondPanel.value;
         }),
-        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction("meta_f", (context, intent) async {
+        LogicalKeySet(KeyCode.keyF.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction((context, intent) async {
           _searchFsn.requestFocus();
         }),
-        LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction("esc", (context, intent) async {
+        LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction((context, intent) async {
           onEscKeyDown();
         })
       },
@@ -296,7 +295,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
             flex: 1,
             child: textField.easyShortcuts(
               intentSet: {
-                LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction("esc", (context, intent) async {
+                LogicalKeySet(KeyCode.escape.logicalKey): CustomIntentWithAction((context, intent) async {
                   var fsn = PasteboardItem.current.value?.focusNode;
                   if (fsn != null) {
                     fsn.requestFocus();
@@ -304,7 +303,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
                     secondField.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
                   }
                 }),
-                LogicalKeySet(KeyCode.tab.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction("shift_tab", (context, intent) async {
+                LogicalKeySet(KeyCode.tab.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction((context, intent) async {
                   var fsn = PasteboardItem.current.value?.focusNode;
                   if (fsn != null) {
                     fsn.requestFocus();
@@ -345,12 +344,12 @@ class _HomePageState extends State<HomePage> with WindowListener {
         ),
         buttonItems: ['以此为基点进行重要性排序']
             .map((label) => ContextMenuButtonItem(
-          onPressed: () {
-            ContextMenuController.removeAny();
-            Get.toNamed('/Pick');
-          },
-          label: label,
-        ))
+                  onPressed: () {
+                    ContextMenuController.removeAny();
+                    Get.toNamed('/Pick');
+                  },
+                  label: label,
+                ))
             .toList());
   }
 
@@ -394,15 +393,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
           }
         },
       ).easyShortcuts(intentSet: {
-        LogicalKeySet(KeyCode.tab.logicalKey): CustomIntentWithAction("tab", (context, intent) async {
+        LogicalKeySet(KeyCode.tab.logicalKey): CustomIntentWithAction((context, intent) async {
           if (showSecondPanel.value) {
             secondField.requestFocus();
           }
         }),
-        LogicalKeySet(KeyCode.enter.logicalKey): CustomIntentWithAction("enter", (context, intent) async {
+        LogicalKeySet(KeyCode.enter.logicalKey): CustomIntentWithAction((context, intent) async {
           _paste(item);
         }),
-        LogicalKeySet(KeyCode.enter.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction("shift_enter", (context, intent) async {
+        LogicalKeySet(KeyCode.enter.logicalKey, LogicalKeyboardKey.shift): CustomIntentWithAction((context, intent) async {
           focusNode.requestFocus();
           showSecondPanel.value = true;
         }),
@@ -440,7 +439,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       },
     );
     return textField.easyShortcuts(intentSet: {
-      LogicalKeySet(KeyCode.arrowDown.logicalKey): CustomIntentWithAction("down", (context, intent) async {
+      LogicalKeySet(KeyCode.arrowDown.logicalKey): CustomIntentWithAction((context, intent) async {
         clipboardVM.pasteboardItemsWithSearchKey[0].focusNode?.requestFocus();
       }),
     });
@@ -527,15 +526,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   Map<LogicalKeySet, CustomIntentWithAction> get metaIntentSet {
     return {
-      LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction("meta_c", (context, intent) async {
+      LogicalKeySet(KeyCode.keyC.logicalKey, LogicalKeyboardKey.meta): CustomIntentWithAction((context, intent) async {
         onCopyKeyDown();
       }),
-      LogicalKeySet(LogicalKeyboardKey.arrowUp): CustomIntentWithAction("up", (context, intent) async {
+      LogicalKeySet(LogicalKeyboardKey.arrowUp): CustomIntentWithAction((context, intent) async {
         var fsn = FocusScope.of(context).focusedChild;
         if (fsn == _searchFsn) return;
         fsn?.previousFocus();
       }),
-      LogicalKeySet(LogicalKeyboardKey.arrowDown): CustomIntentWithAction("down", (context, intent) async {
+      LogicalKeySet(LogicalKeyboardKey.arrowDown): CustomIntentWithAction((context, intent) async {
         var fsn = FocusManager.instance.primaryFocus;
         fsn?.focusInDirection(TraversalDirection.down);
       }),

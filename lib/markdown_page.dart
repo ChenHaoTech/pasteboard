@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
 import 'package:flutter_pasteboard/single_service.dart';
 import 'package:h_foundation/h_foundation.dart';
 import 'package:get/get.dart';
@@ -129,11 +128,11 @@ class MarkdownPageState extends State<MarkdownPage> {
       body: textField.easyShortcuts(
         intentSet: {
           LogicalKeySet(KeyCode.keyB.logicalKey, LogicalKeyboardKey.meta):
-          CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+          CustomIntentWithAction((context, intent) async {
             insertContext("****", offset: -2);
           }),
           LogicalKeySet(KeyCode.keyP.logicalKey, LogicalKeyboardKey.meta):
-          CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+          CustomIntentWithAction((context, intent) async {
             insertContext("- [ ] ");
           })
         }
