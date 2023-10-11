@@ -49,11 +49,15 @@ public class WindowManagerPlugin: NSObject, FlutterPlugin {
             ensureInitialized()
             result(true)
             break
-       case "copy":
+       case "paste":
+            let source = CGEventSource(stateID: .combinedSessionState)
+            // Disable local keyboard events while pasting
+            source?.setLocalEventsFilterDuringSuppressionState([.permitLocalMouseEvents, .permitSystemDefinedEvents],
+                                                               state: .eventSuppressionStateSuppressionInterval)
             let eventKeyDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(UInt32(kVK_ANSI_C)), keyDown: true);
             eventKeyDown!.flags = CGEventFlags.maskCommand;
             eventKeyDown!.post(tap: CGEventTapLocation.cghidEventTap);
-            result("fuck")
+            result("paste_success")
             break
        case "get_top_windows":           
             result(sourceApp?.bundleIdentifier);

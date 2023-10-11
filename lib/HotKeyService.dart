@@ -37,6 +37,20 @@ class HotKeySerice extends GetxController {
 
   void bindGlobalKey(){
     hotKeyManager.register(
+        HotKey(
+          KeyCode.keyV,
+          modifiers: [
+            KeyModifier.control,
+            KeyModifier.shift
+          ],
+          // Set hotkey scope (default is HotKeyScope.system)
+          scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+        ),
+        keyDownHandler: (hotKey) async {
+          var res = await windowManager.invokeMethod("paste");
+          print(res);
+        });
+    hotKeyManager.register(
       _hotKey,
       keyDownHandler: (hotKey) async {
         var curTs = DateTime.now().millisecondsSinceEpoch;
@@ -46,6 +60,7 @@ class HotKeySerice extends GetxController {
         }
         lastTs = curTs;
 
+        //todo 顶级窗口
         var res = await windowManager.invokeMethod("get_top_windows");
         print(res);
 
