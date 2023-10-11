@@ -1,20 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/HotKeyService.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/markdown_page.dart';
-import 'package:flutter_pasteboard/utils/logger.dart';
+import 'package:flutter_siri_suggestions/flutter_siri_suggestions.dart';
 import 'package:get/get.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'ClipboardVM.dart';
-import 'home.dart';
-import 'main_tomoto.dart';
-import 'obsolete/MetaIntent.dart';
+import 'package:photo_album_manager/photo_album_manager.dart';
 
 void main(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
@@ -34,42 +30,27 @@ void main(List<String> args) async {
   // debugFocusChanges = true;
   WidgetsFlutterBinding.ensureInitialized();
   Get.deleteAll(force: true);
-  await hotKeyManager.unregisterAll();
   // await tomotoBinding();
   // Must add this line.
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(210 * 3, 350),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: true,
-    titleBarStyle: TitleBarStyle.hidden,
-    windowButtonVisibility: false,
-  );
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-  });
-  // windowManager.hide();
-  // windowManager.show();
-  windowManager.setMovable(true);
-  windowManager.setResizable(true);
-  windowManager.setVisibleOnAllWorkspaces(false);
   Get.put(ClipboardVM());
-  Get.put(HotKeySerice());
-  Get.put(WindowService());
+  if (GetPlatform.isDesktop) {
+    Get.put(HotKeySerice());
+    Get.put(WindowService());
+  }
   configLoading();
   var onError = FlutterError.onError; //先将 onerror 保存起来
   FlutterError.onError = (FlutterErrorDetails details) {
     onError?.call(details); //调用默认的onError
     // reportErrorAndLog(details); //上报
     //todo only 测试
-    errorMsg.add(
-        "${DateTime.now().toIso8601String()} ${details.exception} ${details.stack}");
+    errorMsg.add("${DateTime.now().toIso8601String()} ${details.exception} ${details.stack}");
     // Future.delayed(1.seconds, () {
     //   Get.to(FlutterErrorDetails(exception: details.exception, stack: details.stack));
     // });
   };
   runApp(const MyApp());
+  configSiri();
+  // touchAlbum();
 
   // 使用了 runZoned 数据库加载不了了
   /*runZoned(
@@ -99,6 +80,51 @@ void main(List<String> args) async {
 var errorMsg = [];
 var hintError = 0.obs;
 
+void touchAlbum() async {
+  //先权限申请
+  PermissionStatus status = await PhotoAlbumManager.checkPermissions();
+  if (status == PermissionStatus.granted) {
+    print("权限同意");
+  } else {
+    print("权限拒绝");
+  }
+//再获取相册资源
+  List<AlbumModelEntity> photos = await PhotoAlbumManager.getDescAlbum(maxCount: 5);
+  print("photos: ${photos.map((e) => "${e.creationDate}, ${e.thumbPath}").toList()}");
+}
+
+void configSiri() async {
+  await FlutterSiriSuggestions.instance.registerActivity(const FlutterSiriActivity("今天很开心", "mainActivity",
+      isEligibleForSearch: true, isEligibleForPrediction: true, contentDescription: "Did you enjoy that?", suggestedInvocationPhrase: "今天不开心"));
+
+  FlutterSiriSuggestions.instance.configure(onLaunch: (Map<String, dynamic> message) async {
+    // Awaken from Siri Suggestion
+    // message = {title: "Open App 👨‍💻", key: "mainActivity", userInfo: {}}
+    // Do what you want :)
+
+    print("called by ${message['key']} suggestion.");
+
+    switch (message["key"]) {
+      case "mainActivity":
+        __text.value = "redirect to mainActivity";
+        break;
+      case "beerActivity":
+        __text.value = "redirect to beerActivity";
+        break;
+      case "searchActivity":
+        __text.value = "redirect to searchActivity";
+        break;
+      case "talkActivity":
+        __text.value = "redirect to talkActivity";
+        break;
+      default:
+        __text.value = "hmmmm...... made a typo";
+    }
+  });
+}
+
+var __text = "fuck".obs;
+
 void configLoading() {
   EasyLoading.instance
     ..displayDuration = const Duration(milliseconds: 2000)
@@ -119,13 +145,11 @@ void configLoading() {
 //todo 要想子界面 也接受对应的 action 和 shorcuts
 Map<LogicalKeySet, CustomIntentWithAction> get globalKeyIntent {
   return {
-    LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control):
-        CustomIntentWithAction("toggle_focus_debug", (context, intent) async {
+    LogicalKeySet(KeyCode.keyD.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction((context, intent) async {
       // debugFocusChanges = !debugFocusChanges;
       debugDumpFocusTree();
     }),
-    LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control):
-        CustomIntentWithAction("toggle_focus_log", (context, intent) async {
+    LogicalKeySet(KeyCode.keyQ.logicalKey, LogicalKeyboardKey.control): CustomIntentWithAction((context, intent) async {
       print("fuck");
     }),
   };
@@ -138,45 +162,52 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      shortcuts: globalKeyIntent,
-      actions: <Type, Action<CustomIntentWithAction>>{
-        CustomIntentWithAction: CallbackAction<CustomIntentWithAction>(
-          onInvoke: (CustomIntentWithAction intent) =>
-              intent.func(context, intent),
+        shortcuts: globalKeyIntent,
+        actions: <Type, Action<CustomIntentWithAction>>{
+          CustomIntentWithAction: CallbackAction<CustomIntentWithAction>(
+            onInvoke: (CustomIntentWithAction intent) => intent.func(context, intent),
+          ),
+        },
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade50),
+          useMaterial3: true,
         ),
-      },
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade50),
-        useMaterial3: true,
-      ),
-      home: const HomePage(title: 'Flutter Demo Home Page'),
-      getPages: [
-        GetPage(
-          name: '/home',
-          page: () => const Text("welcome"),
-        ),
-        GetPage(
-          name: '/markdown',
-          page: () => MarkdownPage(),
-        ),
-        GetPage(
-          name: '/errorMsg',
-          //todo only 测试
-          page: () => Scaffold(
-            body: ListView.builder(
-                itemBuilder: (BuildContext context, int index) {
-              return Text(errorMsg[index]);
-            }),
+        home: Center(
+          // child: Obx(() {
+          //   return Text("${__text.value}");
+          // })
+          child: ElevatedButton(
+            child: Text("fuck"),
+            onPressed: () {
+              touchAlbum();
+            },
           ),
         ),
-      ],
-      builder: (BuildContext context, Widget? child) {
-        EasyLoading.init();
-        hintError.listen((p0) {
-          Get.toNamed("errorMsg");
+        getPages: [
+          GetPage(
+            name: '/home',
+            page: () => const Text("welcome"),
+          ),
+          GetPage(
+            name: '/markdown',
+            page: () => MarkdownPage(),
+          ),
+          GetPage(
+            name: '/errorMsg',
+            //todo only 测试
+            page: () => Scaffold(
+              body: ListView.builder(itemBuilder: (BuildContext context, int index) {
+                return Text(errorMsg[index]);
+              }),
+            ),
+          ),
+        ],
+        builder: (BuildContext context, Widget? child) {
+          EasyLoading.init();
+          hintError.listen((p0) {
+            Get.toNamed("errorMsg");
+          });
+          return FlutterEasyLoading(child: child);
         });
-        return FlutterEasyLoading(child: child);
-      }
-    );
   }
 }

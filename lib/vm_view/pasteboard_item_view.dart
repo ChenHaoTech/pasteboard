@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_pasteboard/obsolete/MetaIntent.dart';
-import 'package:flutter_pasteboard/utils/function.dart';
+import 'package:h_foundation/h_foundation.dart';
 import 'package:flutter_pasteboard/vm_view/pasteboard_item.dart';
 import 'package:get/get.dart';
 

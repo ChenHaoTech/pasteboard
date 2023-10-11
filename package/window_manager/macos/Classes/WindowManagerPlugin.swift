@@ -53,7 +53,7 @@ public class WindowManagerPlugin: NSObject, FlutterPlugin {
             Clipboard.shared.paste()
             result("paste_success")
             break
-       case "get_top_windows":           
+       case "get_top_windows":
             result(sourceApp?.bundleIdentifier);
         break
         case "waitUntilReadyToShow":

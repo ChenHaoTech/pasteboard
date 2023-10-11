@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
@@ -12,8 +13,26 @@ class WindowService extends GetxController {
   FocusNode? autoFocusOnWindowShow;
 
   @override
-  void onInit() {
+  void onInit() async{
     super.onInit();
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(210 * 3, 350),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: true,
+      titleBarStyle: TitleBarStyle.hidden,
+      windowButtonVisibility: false,
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+    });
+    // windowManager.hide();
+    // windowManager.show();
+    windowManager.setMovable(true);
+    windowManager.setResizable(true);
+    windowManager.setVisibleOnAllWorkspaces(false);
+
     windowHide.listen((p0) {
       if(p0) {
         windowManager.hide();

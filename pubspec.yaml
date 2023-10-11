@@ -39,8 +39,12 @@ dependencies:
     path: package/hotkey_manager
   get:
   screen_retriever: ^0.1.6
+  photo_album_manager: ^1.2.0
   keypress_simulator: ^0.1.0
-  pasteboard: ^0.2.0
+  h_foundation:
+    path: package/h_foundation
+  pasteboard:
+    path: package/pasteboard
   crypto: ^3.0.3
   sqflite:
   path_provider:
@@ -64,6 +68,7 @@ dependencies:
   html2md: ^1.3.1
   super_editor: ^0.2.6
   url_launcher: ^6.1.14
+  flutter_siri_suggestions: ^2.1.0
 
 dev_dependencies:
   flutter_test:

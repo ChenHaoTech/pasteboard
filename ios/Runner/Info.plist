@@ -10,6 +10,10 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>NSCameraUsageDescription</key>
+    <string>需要访问相机以实现 xxx 功能</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>需要访问照片库以实现图片选择功能</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
