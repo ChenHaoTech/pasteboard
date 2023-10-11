@@ -1,4 +1,5 @@
 import Cocoa
+import Carbon
 import FlutterMacOS
 
 public class WindowManagerPlugin: NSObject, FlutterPlugin {
@@ -38,7 +39,7 @@ public class WindowManagerPlugin: NSObject, FlutterPlugin {
             _inited = true
         }
     }
-    
+    private var sourceApp: NSRunningApplication? { NSWorkspace.shared.frontmostApplication }
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let methodName: String = call.method
         let args: [String: Any] = call.arguments as? [String: Any] ?? [:]
@@ -48,6 +49,15 @@ public class WindowManagerPlugin: NSObject, FlutterPlugin {
             ensureInitialized()
             result(true)
             break
+       case "copy":
+            let eventKeyDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(UInt32(kVK_ANSI_C)), keyDown: true);
+            eventKeyDown!.flags = CGEventFlags.maskCommand;
+            eventKeyDown!.post(tap: CGEventTapLocation.cghidEventTap);
+            result("fuck")
+            break
+       case "get_top_windows":           
+            result(sourceApp?.bundleIdentifier);
+        break
         case "waitUntilReadyToShow":
             windowManager.waitUntilReadyToShow()
             result(true)

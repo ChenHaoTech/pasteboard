@@ -2,6 +2,7 @@
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_pasteboard/ClipboardVM.dart';
 import 'package:flutter_pasteboard/WindowService.dart';
 import 'package:flutter_pasteboard/single_service.dart';
@@ -10,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:keypress_simulator/keypress_simulator.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:window_manager/window_manager.dart';
 
 class HotKeySerice extends GetxController {
   late ClipboardVM clipboardVM = Get.find<ClipboardVM>();
@@ -44,6 +46,8 @@ class HotKeySerice extends GetxController {
         }
         lastTs = curTs;
 
+        var res = await windowManager.invokeMethod("get_top_windows");
+        print(res);
 
         if(await windowService.isFocus()){
           await windowService.requestWindowHide();
@@ -70,6 +74,9 @@ class HotKeySerice extends GetxController {
         ),
 
       keyDownHandler: (hotKey) async {
+        print(await windowManager.invokeMethod("copy"));
+        EasyLoading.showSuccess("status");
+        return;
         var item = clipboardVM.pasteboardItemsWithSearchKey[1];
         PasteUtils.doCopy(item);
         // global toast 临时解
@@ -80,7 +87,7 @@ class HotKeySerice extends GetxController {
         /// print(mailtoUri); // mailto:John.Doe@example.com?subject=Example
         var uri = Uri(scheme: "hammerspoon",path: "/toast",queryParameters: {"msg":"msg"});
         print(uri);
-        launchUrl(uri);
+        // launchUrl(uri);
       },
     );
   }

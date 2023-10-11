@@ -35,7 +35,7 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   Get.deleteAll(force: true);
   await hotKeyManager.unregisterAll();
-  await tomotoBinding();
+  // await tomotoBinding();
   // Must add this line.
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
